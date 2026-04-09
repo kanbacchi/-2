@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>職人気質診断 — あなたの仕事タイプを知る</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --ink: #2c1e0f;
+    --ink-light: #5c3d1e;
+    --gold: #b8860b;
+    --gold-light: #d4a843;
+    --gold-shine: #f0c040;
+    --shadow: rgba(44, 30, 15, 0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: #1a1008;
+    background-image: radial-gradient(ellipse at 20% 20%, #2c1e0f 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #1a1008 0%, transparent 60%);
+    min-height: 100vh;
+    font-family: 'Noto Serif JP', serif;
+    color: var(--ink);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .scroll-container {
+    width: 100%;
+    max-width: 800px;
+    background: var(--parchment);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"), linear-gradient(180deg, #f8edd8 0%, #f2e4c8 30%, #f5e8cf 60%, #eedfc0 100%);
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px #1a1008, 0 0 0 5px var(--gold), 0 20px 60px rgba(0,0,0,0.8), inset 0 0 80px rgba(184,134,11,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+  .scroll-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, transparent, var(--gold-light), var(--gold-shine), var(--gold-light), transparent); }
+  .scroll-container::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, transparent, var(--gold-light), var(--gold-shine), var(--gold-light), transparent); }
+  .corner { position: absolute; width: 60px; height: 60px; opacity: 0.4; }
+  .corner-tl { top: 8px; left: 8px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+  .corner-tr { top: 8px; right: 8px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+  .corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+  .corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+  .content { padding: 60px 70px; position: relative; }
+  .header { text-align: center; margin-bottom: 40px; }
+  .header-ornament { font-family: 'Cinzel', serif; color: var(--gold); font-size: 11px; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 16px; opacity: 0.8; }
+  .header h1 { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 700; color: var(--ink); line-height: 1.3; margin-bottom: 8px; letter-spacing: 2px; }
+  .header-sub { font-size: 13px; color: var(--ink-light); letter-spacing: 1px; margin-bottom: 20px; }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); }
+  .divider-diamond { width: 8px; height: 8px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+
+  /* 4軸説明 */
+  .axes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+  .axis-card-intro { border: 1px solid rgba(184,134,11,0.4); padding: 16px 18px; border-radius: 2px; background: rgba(184,134,11,0.04); }
+  .axis-card-intro-label { font-family: 'Cinzel', serif; font-size: 10px; color: var(--gold); letter-spacing: 3px; margin-bottom: 6px; }
+  .axis-card-intro-name { font-size: 13px; color: var(--ink); font-weight: 500; margin-bottom: 4px; }
+  .axis-card-intro-desc { font-size: 11px; color: var(--ink-light); line-height: 1.6; }
+
+  /* グループ説明 */
+  .groups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+  .group-card { border: 1px solid rgba(184,134,11,0.4); padding: 16px 18px; border-radius: 2px; background: rgba(184,134,11,0.04); }
+  .group-card-name { font-family: 'Cinzel', serif; font-size: 12px; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+  .group-card-types { font-size: 11px; color: var(--gold); margin-bottom: 6px; letter-spacing: 1px; }
+  .group-card-desc { font-size: 11px; color: var(--ink-light); line-height: 1.6; }
+
+  .intro-text { font-size: 14px; line-height: 2; color: var(--ink); margin-bottom: 20px; }
+  .intro-note { font-size: 12px; color: var(--ink-light); background: rgba(184,134,11,0.06); border: 1px solid rgba(184,134,11,0.2); padding: 16px 20px; border-radius: 2px; line-height: 1.8; margin-bottom: 28px; }
+  .section-title-sm { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 12px; }
+  .btn-start { display: block; width: 100%; padding: 18px; background: var(--gold); border: none; color: var(--parchment); font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 4px; cursor: pointer; transition: all 0.2s; border-radius: 2px; box-shadow: 0 4px 16px rgba(184,134,11,0.3); }
+  .btn-start:hover { background: var(--gold-shine); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(184,134,11,0.4); }
+
+  /* Progress */
+  .progress-area { margin-bottom: 36px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-light); letter-spacing: 1px; margin-bottom: 8px; }
+  .progress-track { height: 4px; background: var(--parchment-dark); border-radius: 2px; overflow: hidden; border: 1px solid rgba(184,134,11,0.3); }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-shine)); border-radius: 2px; transition: width 0.5s ease; }
+  .section-label { display: inline-block; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 4px; color: var(--gold); border: 1px solid var(--gold); padding: 4px 12px; margin-bottom: 24px; opacity: 0.9; }
+  .question-block { margin-bottom: 40px; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .question-number { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); letter-spacing: 3px; margin-bottom: 10px; }
+  .question-text { font-size: 15px; line-height: 1.8; color: var(--ink); margin-bottom: 20px; }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--ink-light); margin-bottom: 10px; }
+  .scale-options { display: flex; gap: 8px; justify-content: center; }
+  .scale-option { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; flex: 1; max-width: 80px; }
+  .scale-btn { width: 100%; aspect-ratio: 1; max-width: 52px; border: 1.5px solid var(--gold-light); background: transparent; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 13px; color: var(--ink-light); border-radius: 2px; }
+  .scale-btn:hover { background: rgba(184,134,11,0.1); border-color: var(--gold); color: var(--ink); }
+  .scale-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--parchment); box-shadow: 0 2px 8px rgba(184,134,11,0.4); }
+  .nav-area { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(184,134,11,0.3); }
+  .btn-back { background: transparent; border: 1.5px solid rgba(184,134,11,0.5); color: var(--ink-light); padding: 10px 24px; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+  .btn-back:hover { border-color: var(--gold); color: var(--ink); }
+  .btn-next { background: var(--gold); border: none; color: var(--parchment); padding: 12px 36px; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; cursor: pointer; transition: all 0.2s; border-radius: 2px; box-shadow: 0 2px 8px rgba(184,134,11,0.3); }
+  .btn-next:hover { background: var(--gold-shine); box-shadow: 0 4px 16px rgba(184,134,11,0.5); transform: translateY(-1px); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Profile */
+  .profile-question { margin-bottom: 28px; }
+  .profile-question-text { font-size: 14px; color: var(--ink); margin-bottom: 14px; line-height: 1.7; }
+  .profile-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .profile-btn { border: 1.5px solid rgba(184,134,11,0.5); background: transparent; padding: 14px 16px; cursor: pointer; text-align: left; transition: all 0.2s ease; border-radius: 2px; position: relative; }
+  .profile-btn:hover { border-color: var(--gold); background: rgba(184,134,11,0.06); }
+  .profile-btn.selected { border-color: var(--gold); background: rgba(184,134,11,0.12); }
+  .profile-btn-name { font-family: 'Cinzel', serif; font-size: 12px; color: var(--ink); font-weight: 600; display: block; margin-bottom: 4px; }
+  .profile-btn-desc { font-size: 11px; color: var(--ink-light); line-height: 1.5; }
+  .profile-btn-emoji { position: absolute; top: 12px; right: 14px; font-size: 16px; }
+
+  /* Result */
+  .result-seal { text-align: center; margin-bottom: 32px; }
+  .result-emoji { font-size: 72px; display: block; margin-bottom: 16px; }
+  .result-type-code { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 6px; color: var(--gold); margin-bottom: 8px; }
+  .result-type-name { font-family: 'Cinzel', serif; font-size: 38px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+  .result-tagline { font-size: 13px; color: var(--ink-light); font-style: italic; line-height: 1.7; }
+
+  .result-group-box { background: rgba(184,134,11,0.06); border: 1px solid rgba(184,134,11,0.3); padding: 20px 24px; border-radius: 2px; margin: 24px 0; }
+  .result-group-label { font-family: 'Cinzel', serif; font-size: 10px; color: var(--gold); letter-spacing: 3px; margin-bottom: 8px; }
+  .result-group-name { font-size: 15px; color: var(--ink); font-weight: 500; margin-bottom: 6px; }
+  .result-group-desc { font-size: 13px; color: var(--ink-light); line-height: 1.7; }
+
+  .result-axes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+  .axis-result-card { border: 1px solid rgba(184,134,11,0.4); padding: 12px 16px; border-radius: 2px; background: rgba(184,134,11,0.04); }
+  .axis-result-label { font-size: 10px; color: var(--gold); letter-spacing: 2px; font-family: 'Cinzel', serif; margin-bottom: 4px; }
+  .axis-result-value { font-size: 14px; color: var(--ink); font-weight: 500; }
+
+  .result-section { margin-bottom: 28px; }
+  .result-section-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; color: var(--gold); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .result-section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--gold-light), transparent); }
+  .result-section-text { font-size: 14px; line-height: 1.9; color: var(--ink); }
+  .result-example { font-size: 12px; color: var(--ink-light); background: rgba(184,134,11,0.06); border-left: 2px solid var(--gold-light); padding: 10px 14px; margin-top: 10px; line-height: 1.8; font-style: italic; border-radius: 0 2px 2px 0; }
+
+  .compat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .compat-card { border: 1px solid rgba(184,134,11,0.3); padding: 16px; border-radius: 2px; }
+  .compat-card.good { background: rgba(74,103,65,0.06); border-color: rgba(74,103,65,0.3); }
+  .compat-card.caution { background: rgba(139,26,26,0.04); border-color: rgba(139,26,26,0.2); }
+  .compat-label { font-size: 10px; letter-spacing: 2px; font-family: 'Cinzel', serif; margin-bottom: 8px; }
+  .compat-card.good .compat-label { color: #4a6741; }
+  .compat-card.caution .compat-label { color: #8b1a1a; }
+  .compat-type-name { font-size: 14px; color: var(--ink); font-weight: 500; margin-bottom: 6px; }
+  .compat-desc { font-size: 12px; color: var(--ink-light); line-height: 1.7; }
+  .compat-scene { font-size: 11px; color: var(--ink-light); background: rgba(184,134,11,0.06); border-left: 2px solid var(--gold-light); padding: 8px 12px; margin-top: 8px; line-height: 1.7; font-style: italic; border-radius: 0 2px 2px 0; }
+
+  .work-nature-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .work-tab { padding: 6px 14px; border: 1px solid rgba(184,134,11,0.4); background: transparent; font-size: 11px; font-family: 'Cinzel', serif; color: var(--ink-light); cursor: pointer; border-radius: 2px; transition: all 0.2s; letter-spacing: 1px; }
+  .work-tab.active { background: var(--gold); border-color: var(--gold); color: var(--parchment); }
+  .work-content { font-size: 13px; line-height: 1.8; color: var(--ink); padding: 16px; background: rgba(184,134,11,0.05); border: 1px solid rgba(184,134,11,0.2); border-radius: 2px; }
+
+  .academic-note { margin-top: 40px; padding: 20px 24px; border: 1px solid rgba(184,134,11,0.2); background: rgba(184,134,11,0.03); border-radius: 2px; }
+  .academic-note-title { font-family: 'Cinzel', serif; font-size: 10px; color: var(--gold); letter-spacing: 3px; margin-bottom: 10px; }
+  .academic-note-text { font-size: 11px; color: var(--ink-light); line-height: 1.8; }
+
+  .btn-retry { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; cursor: pointer; margin-top: 32px; transition: all 0.2s; border-radius: 2px; }
+  .btn-retry:hover { background: var(--gold); color: var(--parchment); }
+
+  @media (max-width: 600px) {
+    .content { padding: 40px 28px; }
+    .header h1 { font-size: 22px; }
+    .axes-grid, .groups-grid, .result-axes, .compat-grid { grid-template-columns: 1fr; }
+    .profile-options { grid-template-columns: 1fr; }
+    .scale-btn { max-width: 42px; }
+  }
+</style>
+</head>
+<body>
+<div class="scroll-container">
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+  <div class="content">
+
+    <!-- イントロページ -->
+    <div id="intro-page">
+      <div class="header">
+        <div class="header-ornament">✦ Vocatio Diagnosis ✦</div>
+        <h1>職人気質診断</h1>
+        <div class="header-sub">あなたの仕事タイプを知る</div>
+        <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+      </div>
+
+      <p class="intro-text">あなたが本来持っている性格や特性を4つの軸で測り、今いる職場でどう力を発揮できるかを明らかにします。全34問（性格に関する32問＋プロフィール2問）で構成されています。</p>
+
+      <div class="section-title-sm">✦ 診断の4つの軸</div>
+      <div class="axes-grid">
+        <div class="axis-card-intro">
+          <div class="axis-card-intro-label">AXIS 01 — INFO</div>
+          <div class="axis-card-intro-name">情報処理｜直感型 ↔ 分析型</div>
+          <div class="axis-card-intro-desc">感覚・全体感で動くか、データ・根拠から積み上げて動くか</div>
+        </div>
+        <div class="axis-card-intro">
+          <div class="axis-card-intro-label">AXIS 02 — ENERGY</div>
+          <div class="axis-card-intro-name">エネルギー｜発信型 ↔ 内省型</div>
+          <div class="axis-card-intro-desc">話すことで思考が整うか、一人で考えてからアウトプットするか</div>
+        </div>
+        <div class="axis-card-intro">
+          <div class="axis-card-intro-label">AXIS 03 — ACTION</div>
+          <div class="axis-card-intro-name">行動｜先行型 ↔ 熟考型</div>
+          <div class="axis-card-intro-desc">まず動いて考えるか、考えてから動くか</div>
+        </div>
+        <div class="axis-card-intro">
+          <div class="axis-card-intro-label">AXIS 04 — RELATION</div>
+          <div class="axis-card-intro-name">関係｜協調型 ↔ 独立型</div>
+          <div class="axis-card-intro-desc">人と合わせながら進めるか、自分のペースで進めるか</div>
+        </div>
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+
+      <div class="section-title-sm">✦ 4つのグループ</div>
+      <div class="groups-grid">
+        <div class="group-card">
+          <div class="group-card-name">🌊 航海者グループ</div>
+          <div class="group-card-types">発信型 × 協調型（EC）</div>
+          <div class="group-card-desc">外に向かうエネルギーが強く、人と一緒に動くことで力を発揮する。航海士・吟遊詩人・騎士団長・外交官</div>
+        </div>
+        <div class="group-card">
+          <div class="group-card-name">🌑 探求者グループ</div>
+          <div class="group-card-types">内省型 × 独立型（ND）</div>
+          <div class="group-card-desc">内向きのエネルギーが強く、自分の世界で深く考えることで力を発揮する。斥候・錬金術師・薬師・写本師</div>
+        </div>
+        <div class="group-card">
+          <div class="group-card-name">🔥 発信者グループ</div>
+          <div class="group-card-types">発信型 × 独立型（ED）</div>
+          <div class="group-card-desc">芯を持って外に発信する。流されない強さとエネルギーを兼ね備える。預言者・哲学者・弁論家・裁判官</div>
+        </div>
+        <div class="group-card">
+          <div class="group-card-name">🌿 支柱者グループ</div>
+          <div class="group-card-types">内省型 × 協調型（NC）</div>
+          <div class="group-card-desc">静かにチームを支え、誰より場の空気を感じ取る。灯台守・修道士・地図師・司書</div>
+        </div>
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+
+      <div class="intro-note">◆ 所要時間：約10〜15分　◆ 各質問を5段階で評価　◆ 回答後すぐに結果が表示されます<br>◆ 正解も不正解もありません。直感で答えてください。</div>
+      <button class="btn-start" onclick="startDiagnosis()">診断をはじめる</button>
+    </div>
+
+    <!-- 設問ページ -->
+    <div id="question-page" style="display:none;">
+      <div class="progress-area">
+        <div class="progress-label">
+          <span id="progress-text">質問 1 / 32</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="section-label-area"></div>
+      <div id="question-area"></div>
+      <div class="nav-area">
+        <button class="btn-back" id="btn-back" onclick="prevQuestion()">← 戻る</button>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()" disabled>次へ →</button>
+      </div>
+    </div>
+
+    <!-- プロフィールページ -->
+    <div id="profile-page" style="display:none;">
+      <div class="header">
+        <div class="header-ornament">✦ Profile ✦</div>
+        <h1>プロフィール</h1>
+        <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+      </div>
+      <div class="profile-question">
+        <div class="profile-question-text">現在の仕事で最も比重が大きいものはどれですか？</div>
+        <div class="profile-options" id="nature-options">
+          <button class="profile-btn" onclick="selectNature('創造')" data-value="創造"><span class="profile-btn-emoji">🌱</span><span class="profile-btn-name">創造</span><span class="profile-btn-desc">新しいものを生み出す仕事（企画、デザイン、開発など）</span></button>
+          <button class="profile-btn" onclick="selectNature('実行')" data-value="実行"><span class="profile-btn-emoji">⚡</span><span class="profile-btn-name">実行</span><span class="profile-btn-desc">決まったことを確実に動かす仕事（営業、オペレーション、製造など）</span></button>
+          <button class="profile-btn" onclick="selectNature('管理')" data-value="管理"><span class="profile-btn-emoji">📊</span><span class="profile-btn-name">管理</span><span class="profile-btn-desc">人・お金・進捗を把握して整える仕事（マネージャー、経理、PMなど）</span></button>
+          <button class="profile-btn" onclick="selectNature('支援')" data-value="支援"><span class="profile-btn-emoji">🤝</span><span class="profile-btn-name">支援</span><span class="profile-btn-desc">他の人が動きやすいよう支える仕事（総務、CS、アシスタントなど）</span></button>
+        </div>
+      </div>
+      <div class="profile-question">
+        <div class="profile-question-text">今の職場における立場はどれですか？</div>
+        <div class="profile-options" id="position-options">
+          <button class="profile-btn" onclick="selectPosition('新人')" data-value="新人"><span class="profile-btn-emoji">🌱</span><span class="profile-btn-name">新人</span><span class="profile-btn-desc">まだ覚えることが多く、周りに助けてもらいながら進んでいる</span></button>
+          <button class="profile-btn" onclick="selectPosition('中堅')" data-value="中堅"><span class="profile-btn-emoji">🌳</span><span class="profile-btn-name">中堅</span><span class="profile-btn-desc">自分の仕事に責任を持ち、自立してこなせる</span></button>
+          <button class="profile-btn" onclick="selectPosition('ベテラン')" data-value="ベテラン"><span class="profile-btn-emoji">🏔️</span><span class="profile-btn-name">ベテラン</span><span class="profile-btn-desc">経験豊富な知識で、仕事や社員を支える立場にある</span></button>
+          <button class="profile-btn" onclick="selectPosition('リーダー職')" data-value="リーダー職"><span class="profile-btn-emoji">👑</span><span class="profile-btn-name">リーダー職</span><span class="profile-btn-desc">チームや周りの方向性に責任を持ち、まとめる立場にいる</span></button>
+        </div>
+      </div>
+      <div class="nav-area">
+        <button class="btn-back" onclick="backToQuestions()">← 戻る</button>
+        <button class="btn-next" id="btn-profile-next" onclick="showResult()" disabled>結果を見る →</button>
+      </div>
+    </div>
+
+    <!-- 結果ページ -->
+    <div id="result-page" style="display:none;"></div>
+
+  </div>
+</div>
+
+<script>
+const questions = [
+  {id:1,axis:'info',dir:'intuitive',text:'会議中、データを見る前から「これは上手くいく／いかない」と感じることがある'},
+  {id:2,axis:'info',dir:'intuitive',text:'説明するとき、細かい根拠より全体像やイメージから話し始めることが多い'},
+  {id:3,axis:'info',dir:'intuitive',text:'初めて取り組む仕事でも、全体の進め方がなんとなくイメージできる方だ'},
+  {id:4,axis:'info',dir:'intuitive',text:'やるべきことの優先順位は、考えなくても自然と見えてくる方だ'},
+  {id:5,axis:'info',dir:'analytical',text:'意見を言う前に、根拠やデータが揃っていないと不安になる'},
+  {id:6,axis:'info',dir:'analytical',text:'感覚的な判断より、事実や数字に基づいた判断の方が信頼できると思う'},
+  {id:7,axis:'info',dir:'analytical',text:'計画を立てるとき、具体的なステップや数値目標がないと動きにくい'},
+  {id:8,axis:'info',dir:'intuitive',text:'直感で判断した後、必ず自分なりに理由を確認しようとする'},
+  {id:9,axis:'energy',dir:'expressive',text:'考えをまとめるとき、誰かに壁打ちしながら整理することが多い'},
+  {id:10,axis:'energy',dir:'expressive',text:'会議やミーティングでは、その場で意見を言葉にしやすい方だ'},
+  {id:11,axis:'energy',dir:'expressive',text:'黙って作業するより、周りと話しながら進める方がはかどる'},
+  {id:12,axis:'energy',dir:'expressive',text:'自分の気持ちや考えは、表に出さないとストレスになる方だ'},
+  {id:13,axis:'energy',dir:'introspective',text:'意見を求められたとき、自分の考えの枠組みが整うまで即答するのが難しい方だ'},
+  {id:14,axis:'energy',dir:'introspective',text:'大勢の前で話すより、少人数や1対1の方が本来の力を発揮できる'},
+  {id:15,axis:'energy',dir:'introspective',text:'人と関わる時間が増えた時ほど、一人で考える時間が欲しいと感じる'},
+  {id:16,axis:'energy',dir:'introspective',text:'自分から発言するとき、言いたいことを頭の中で一度まとめてから話し始める方だ'},
+  {id:17,axis:'action',dir:'proactive',text:'完璧な準備が整っていなくても、まず動いてみる方だ'},
+  {id:18,axis:'action',dir:'proactive',text:'新しい仕事を任されたとき、細かく考えるより先に着手することが多い'},
+  {id:19,axis:'action',dir:'proactive',text:'やりながら修正していくスタイルの方が、自分には合っていると思う'},
+  {id:20,axis:'action',dir:'proactive',text:'判断材料が不十分でも、自分なりの結論を出して前に進める方だ'},
+  {id:21,axis:'action',dir:'deliberate',text:'動き出す前に、想定されるリスクや問題点をある程度洗い出したい方だ'},
+  {id:22,axis:'action',dir:'deliberate',text:'頭でわかっていても、準備が整う実感がないと体が動かないことがある'},
+  {id:23,axis:'action',dir:'deliberate',text:'判断を求められたとき、情報が揃うまで結論を出すのを待ちたいと思う'},
+  {id:24,axis:'action',dir:'deliberate',text:'後から手戻りが発生することへの抵抗感が強い方だ'},
+  {id:25,axis:'relation',dir:'cooperative',text:'自分だけで決めるより、周りと意見を合わせてから進めたい方だ'},
+  {id:26,axis:'relation',dir:'cooperative',text:'チームの方向性と自分のやり方がズレていると、居心地が悪くなる'},
+  {id:27,axis:'relation',dir:'cooperative',text:'誰かと役割を分担しながら進める仕事の方が、力を発揮しやすい'},
+  {id:28,axis:'relation',dir:'cooperative',text:'周りの状況や空気を読みながら、自分の行動を調整することが多い'},
+  {id:29,axis:'relation',dir:'independent',text:'自分のやり方やペースを尊重してもらえる環境の方が、力を発揮しやすい'},
+  {id:30,axis:'relation',dir:'independent',text:'周りのペースに合わせることが続くと、自分本来のパフォーマンスが出しにくくなる感覚がある'},
+  {id:31,axis:'relation',dir:'independent',text:'意見が分かれたとき、多数派より自分の判断を優先したいと思う方だ'},
+  {id:32,axis:'relation',dir:'independent',text:'裁量を持って進められる仕事の方が、自分らしく力を発揮できる'},
+];
+
+const sectionInfo = {
+  1: { label:'情報処理軸', desc:'直感型 ↔ 分析型｜感覚で掴むか、根拠から積み上げるか' },
+  9: { label:'エネルギー軸', desc:'発信型 ↔ 内省型｜話しながら考えるか、内側で考えてから出すか' },
+  17: { label:'行動軸', desc:'先行型 ↔ 熟考型｜まず動くか、考えてから動くか' },
+  25: { label:'関係軸', desc:'協調型 ↔ 独立型｜人と合わせるか、自分のペースで進めるか' },
+};
+
+const groupData = {
+  EC: { name:'🌊 航海者グループ', desc:'外に向かうエネルギーが強く、人と一緒に動くことで力を発揮するグループです。発信型×協調型の組み合わせで、チームを巻き込みながら前に進む力を持ちます。' },
+  ND: { name:'🌑 探求者グループ', desc:'内向きのエネルギーが強く、自分の世界で深く考えることで力を発揮するグループです。内省型×独立型の組み合わせで、一人で黙々と深めていく力を持ちます。' },
+  ED: { name:'🔥 発信者グループ', desc:'芯を持ちながら外に発信するグループです。発信型×独立型の組み合わせで、流されない強さと発信力を兼ね備えています。' },
+  NC: { name:'🌿 支柱者グループ', desc:'静かにチームを支え、誰より場の空気を感じ取るグループです。内省型×協調型の組み合わせで、縁の下の力持ちとしてチームを守ります。' },
+};
+
+const axisNames = {
+  energy: { E:'発信型', N:'内省型' },
+  relation: { C:'協調型', D:'独立型' },
+  info: { I:'直感型', A:'分析型' },
+  action: { F:'先行型', T:'熟考型' },
+};
+
+const typeData = {
+  ECIF: {
+    emoji:'🧭', name:'航海士', tagline:'ビジョンを語りながら、チームを未知の海へ連れていく',
+    overview:'航海士は、まだ誰も地図を持っていない海に、真っ先に舵を切り出す人物だ。データや前例が揃う前から「こっちだ」という確信を持ち、チームを巻き込みながら動き出せる。会議室で議論を重ねるより、まず一歩踏み出してみることに迷いがない。失敗しても「じゃあ次はこうしよう」と切り替えが早く、その前向きなエネルギーが周りを鼓舞する。職場においては、停滞しているプロジェクトや「誰かがやらなきゃ」という局面で、自然と旗振り役になっていることが多い。',
+    strength:'変化が速く、正解が見えない状況でこそ本領を発揮する。チームが「どうしよう」と立ち止まっているとき、航海士は「とりあえずこっちへ行こう」と方向を示せる。新しいプロジェクトの立ち上げ期、誰も手をつけていない課題への最初のアプローチ、組織の転換期など、不確実さが高い場面ほど輝く。',
+    strengthExample:'例えば新規プロジェクトの立ち上げ初日、誰もが手探りで進め方を議論している中、航海士はすでに「まず顧客に話を聞きに行こう」と動き出している。そのスピード感がチームの初速を一気に引き上げる。',
+    caution:'勢いで動き出した結果、気づいたら周りがついてこれていない、ということが起きやすい。「伝えた」と「伝わった」は別物で、自分の中では完結していても、チームにはまだ共有されていないことがある。また、判断のスピードが速い分、後から「あのとき確認しておけばよかった」という手戻りが発生することも。',
+    cautionExample:'例えば「これで進めよう」と一人で決めて動き出したあと、後日メンバーから「そんな話聞いてなかった」と言われる場面が生まれやすい。',
+    request:'細かく管理されたり、逐一確認を求められると推進力が一気に落ちる。大きな方向性と最終ゴールだけ共有してもらえれば、あとは自分で考えて動ける。また、まだ形になっていないアイデアの段階で「根拠は？」と詰められると萎縮しやすい。「まず聞いてみる」「やりながら考えよう」というスタンスで接してもらえると、最大限のパフォーマンスを発揮できる。',
+    contribution:'停滞しているチームに「最初の一歩」を踏み出させられる存在。誰もが「難しそう」と感じている課題に、「やってみよう」と声を上げられる勇気がチームの空気をガラッと変える。また、発信型のエネルギーで周りを巻き込む力があるため、バラバラになりがちなチームをひとつの方向へ引っ張ることができる。',
+    work:{創造:'新規企画の立案、ブレスト進行、新サービスの構想',実行:'プロジェクト推進、新規顧客開拓、スピード重視の折衝',管理:'新チームの立ち上げ、組織改革の推進、目標設定',支援:'新しい取り組みの旗振り、社内巻き込み、横断プロジェクトの調整'},
+    good:[{name:'📜 写本師（NDAT）',desc:'航海士が勢いよく進む中で、写本師が細かい抜け漏れを拾い上げてくれる。スピードと精度を補い合える黄金コンビ。',scene:'航海士が「とりあえずこの方向で！」と走り出したとき、写本師が「このリスクだけ先に確認しておきましょう」と一言添えることで、大きな失敗を未然に防ぐ。'},{name:'⚖️ 裁判官（EDAT）',desc:'論理と根拠で航海士の直感を補強してくれる。「なんとなくこっち」を「だからこっち」に変えてくれる頼もしいパートナー。',scene:'航海士が直感で「これがいい」と言ったとき、裁判官が「データ的にもその方向が正しい」と根拠を示すことで、チームの納得感が一気に上がる。'}],
+    caution_type:[{name:'⚗️ 錬金術師（NDIT）',desc:'どちらも独自の世界観が強く、方向性がぶつかりやすい。意識的に対話の場を作ることが大切。',scene:'会議で航海士が「まずやってみよう」と言うたびに、錬金術師が「でももっと深く考えてからの方が…」と止めようとする。お互いが「なぜわかってくれないんだろう」と感じやすい場面が生まれる。'}],
+  },
+  ECIT: {
+    emoji:'🎶', name:'吟遊詩人', tagline:'言葉と対話で、場の空気を静かに動かしていく',
+    overview:'吟遊詩人は、言葉と対話の力でチームの空気を動かす人物だ。直感的にチームの「今何が必要か」を感じ取りながら、焦らず丁寧に対話を重ねて答えを見つけていく。会議では場の雰囲気を読みながら発言のタイミングを見計らい、誰もが言いにくいことを絶妙な言葉で代弁できる。アイデアは豊富だが無鉄砲ではなく、チームの合意を大切にしながら慎重に進める。単独で突き進むより、誰かと話しながら考えを深めていく中に、このタイプの真骨頂がある。',
+    strength:'意見が対立しているとき、チームの方向性が定まらないとき、誰かが傷ついているときに真価を発揮する。感情と論理の両方に目を向けながら対話を重ね、気づけば全員が「そうしよう」と頷いている場を作り出せる。',
+    strengthExample:'例えば企画会議で二つの案が対立したとき、吟遊詩人は「Aさんの言いたいことってこういうことですよね、Bさんの意見と実は近いと思うんですが」と橋渡しをする。気づいたら対立が消えて合意が生まれている、という場面を自然と作れる。',
+    caution:'対話を重視するあまり、決断が遅れがちになることがある。「もう少し話し合ってから」が続くと、周りが消耗してしまうことも。また、場の空気を読みすぎて自分の本音を後回しにしてしまう傾向もある。',
+    cautionExample:'「みんなが納得するまで決めたくない」という気持ちが強いあまり、締め切り直前まで結論が出ない、という場面が起きやすい。',
+    request:'結論を急かされると本来の力が出にくい。議論の場をきちんと設けてもらい、話し合いのプロセスを大切にしてもらえると最大限貢献できる。また、自分の意見を求めるときは「どう思う？」と直接聞いてもらえると答えやすい。',
+    contribution:'チームの中で「全員の声を拾える」唯一の存在になれる。誰も言えていないモヤモヤを言語化して場に出せる力がチームの風通しを良くする。また、対立しがちな二者の間に立って、双方が納得できる落とし所を見つける橋渡し役としても頼りにされる。',
+    work:{創造:'アイデアのブラッシュアップ、コンセプト設計、企画会議のファシリテーション',実行:'顧客ヒアリング、提案内容のすり合わせ、関係者調整',管理:'チームの課題抽出、1on1、メンバーとのすり合わせ',支援:'社内ヒアリング、困りごとの言語化、部署間の橋渡し'},
+    good:[{name:'⚔️ 騎士団長（ECAF）',desc:'吟遊詩人が対話で場を温め、騎士団長が論理で決断を下す。感性と論理が噛み合うバランスの良いコンビ。',scene:'吟遊詩人がチーム全員の意見を引き出した後、騎士団長が「ではデータ的にこちらで進めよう」と決断する。対話と決断が綺麗に役割分担される。'},{name:'🗺️ 斥候（NDIF）',desc:'斥候が単独で切り開いた道を、吟遊詩人がチーム全体に共有・翻訳してくれる。突破力と対話力の理想的な分業。',scene:'斥候が「こういう方法を試してみた」と報告したとき、吟遊詩人が「それってチームにとってこういう意味があるよね」と意義を言語化してくれる。'}],
+    caution_type:[{name:'📣 弁論家（EDAF）',desc:'吟遊詩人が「場の合意」を重視するのに対し、弁論家は「論理的な正しさ」を優先しがち。アプローチへの理解がないと会議で空回りしやすい。',scene:'吟遊詩人が「もう少し全員の意見を聞いてから…」と言うたびに、弁論家が「でもデータ的にはもう答えが出てる」と押し進めようとする。お互いの進め方がすれ違い、どちらも消耗しやすい。'}],
+  },
+  ECAF: {
+    emoji:'⚔️', name:'騎士団長', tagline:'データと論理を盾に、迷いなくチームを率いて前へ進む',
+    overview:'騎士団長は、データと論理を盾に、迷いなくチームを率いていく人物だ。感覚だけで動くことはなく、根拠が揃ったときの決断スピードと推進力は16タイプの中でも随一。論理的でありながらも発信型のエネルギーを持つため、「正しいことを正しく伝える」力に長けている。チームの中では自然と頼られる存在になり、「この人が言うなら大丈夫」という信頼感を積み上げていく。',
+    strength:'データや根拠が揃ったとき、誰よりも早く「やろう」と言えるのがこのタイプ。特に、チームが「正しいとわかっているのに踏み出せない」という局面で、背中を押す存在になれる。会議やプレゼンの場では論理的な説得力が際立ち、反対意見に対しても冷静に根拠を示しながら議論を進められる。',
+    strengthExample:'例えばチームが「このプランでいいのか不安」と足踏みしているとき、騎士団長が「競合データと市場調査を見ると、この方向性が最も勝率が高い」と示すことで、チームが一気に動き出す。',
+    caution:'自分の分析への自信が強いがゆえに、他の意見を「感覚的すぎる」と切り捨ててしまうことがある。正論であっても伝え方が直接的すぎると、周りが萎縮したり反発を招いたりすることも。',
+    cautionExample:'「そのアイデアはデータ的に根拠がない」と正確に指摘したつもりが、提案した相手は「否定された」と感じてしまい、次から意見を言いにくくなる、という場面が起きやすい。',
+    request:'根拠のない反対意見には対応が難しい。意見があるときはデータや具体的な理由と一緒に伝えてもらえると、建設的に動ける。また、決めたことをあとからひっくり返されると推進力が大きく落ちるため、方針変更の際は早めに共有してほしい。',
+    contribution:'「なんとなく進んでいる」状態を「根拠を持って進んでいる」状態に変えられる存在。チームに論理的な背骨を通す役割を担い、外部への説明や交渉の場で特に頼りにされる。',
+    work:{創造:'市場調査に基づく企画立案、競合分析、データドリブンな新規提案',実行:'数値目標の設定と管理、根拠ある提案営業、スピード重視の意思決定',管理:'KPI設計、進捗管理、データを使ったチーム課題の特定',支援:'業務改善提案、仕組みづくり、マニュアル整備'},
+    good:[{name:'🎶 吟遊詩人（ECIT）',desc:'騎士団長の論理的な決断を、吟遊詩人が対話でチーム全体に馴染ませてくれる。「決める人」と「まとめる人」の理想的な分業。',scene:'騎士団長が「この方向で進める」と決断したあと、吟遊詩人が各メンバーの不安を丁寧に聞いて解消してくれる。決断の速さとチームの納得感が両立する。'},{name:'📜 写本師（NDAT）',desc:'騎士団長が描く大きな戦略を、写本師が細部まで丁寧に実装してくれる。スピードと精度が高い次元で両立する。',scene:'騎士団長が「この戦略で行こう」と決めたとき、写本師が「では手順書と確認チェックリストを作ります」と動く。大きな方向性と実務の精度が見事に噛み合う。'}],
+    caution_type:[{name:'⚗️ 錬金術師（NDIT）',desc:'騎士団長が「根拠ある最短ルート」を求めるのに対し、錬金術師は「誰も歩いていない道」を好む。お互いの価値観を尊重できれば強力なコンビになれる。',scene:'騎士団長が「データ的にこのルートが最適」と言うたびに、錬金術師が「でも本当にそのやり方でいいのか、もっと根本から考え直してみたい」と立ち止まる。「なぜ前に進まないんだ」「なぜ深く考えずに進めようとするんだ」という温度差が生まれやすい。'}],
+  },
+  ECAT: {
+    emoji:'🤝', name:'外交官', tagline:'全員の納得を丁寧に積み上げ、確かな合意を形成する',
+    overview:'外交官は、全員が納得した状態で前に進むことを何より大切にする人物だ。一人ひとりの立場や利害を丁寧に汲み取りながら、誰も置いてけぼりにしない合意形成ができる。発信型のエネルギーを持ちながらも熟考型であるため、「話すのは得意だが慎重」という独特のバランス感覚がある。場の空気を読む力と情報収集力を兼ね備え、複雑な人間関係が絡む場面でこそ輝く。',
+    strength:'複数の関係者が絡む複雑な局面で真価を発揮する。利害が対立する二者の間に立ち、双方が「それなら納得できる」と感じる着地点を見つけられる。また、大きな意思決定の前に関係者全員の意見を丁寧に集め、後からの反発や手戻りを未然に防ぐ力も持つ。',
+    strengthExample:'例えば部署間で意見が割れているプロジェクトで、外交官が各部署を個別に回って話を聞き、「実はお互い求めているものは近かった」と気づかせることで、対立が自然と解消されていく。',
+    caution:'全員の納得を求めるあまり、決断が後回しになりやすい。「もう少し話し合おう」が続くと、スピードを求めるメンバーから不満が出ることも。また、場の合意を優先するあまり、自分の本音や最善策を引っ込めてしまうことがある。',
+    cautionExample:'「全員の合意が取れるまで決めたくない」という姿勢が続くと、スピードが求められる局面で「決断が遅い」という不満がチームに溜まっていく。',
+    request:'議論の場を突然打ち切られたり、一方的に決定されると力が出にくい。プロセスを大切にしてもらえると最大限貢献できる。また、「あとはよろしく」と丸投げされるより、目的とゴールを一緒に確認してから動き出せると、精度の高い調整ができる。',
+    contribution:'チームの中で最も「後からの手戻り」を防げる存在。全員が納得した状態で進むため、途中で方針がひっくり返ることが少ない。また、チームの人間関係が複雑になってきたときに、自然と潤滑油の役割を担い、関係性を修復する力も持つ。',
+    work:{創造:'ステークホルダーを巻き込んだ企画推進、要件定義、コンセプトの合意形成',実行:'複数部署をまたぐ調整、契約交渉、クレーム対応',管理:'会議設計、意思決定プロセスの整備、チームルール作り',支援:'社内制度設計、採用面接、オンボーディング設計'},
+    good:[{name:'🔮 預言者（EDIF）',desc:'預言者が描く大きなビジョンを、外交官がチーム全体に丁寧に浸透させてくれる。「先を見る人」と「まとめる人」の理想的な役割分担。',scene:'預言者が「会社はこの方向に変わるべきだ」と高らかに宣言したとき、外交官が各メンバーの不安を聞き取りながら「つまりこういうことですよね」と翻訳して届ける。ビジョンが現場に根付く。'},{name:'🌿 薬師（NDAF）',desc:'外交官が合意を取り付けた後、薬師が素早く実行に移してくれる。調整力と実行力が高い次元で噛み合うコンビ。',scene:'外交官が「全員合意が取れた、あとはお願いします」と渡したとき、薬師が「わかりました」と静かに動き出し、気づいたら形になっている。'}],
+    caution_type:[{name:'🗺️ 斥候（NDIF）',desc:'外交官が「全員の合意」を重視するのに対し、斥候は「とりあえず動く」を優先する。役割を明確にすれば強力なチームになれる。',scene:'外交官が「まだ全員の合意が取れていないから待って」と言うたびに、斥候はすでに動き出している。「勝手に進めないで」「いちいち待ってられない」という摩擦が生まれやすい。'}],
+  },
+  NDIF: {
+    emoji:'🗺️', name:'斥候', tagline:'誰も踏み込んでいない領域に、単独で先駆けていく',
+    overview:'斥候は、誰も踏み込んでいない領域に単独で先駆けていく人物だ。前例がないことへの抵抗感が薄く、「まず行ってみよう」という行動力と直感の鋭さが際立つ。一人で黙々と動くことを好み、細かい指示や管理がなくても自律的に動ける。報告や相談は少なめだが、気づいたら誰も気づいていなかった突破口を開いていた、というのがこのタイプの典型的な貢献の形だ。',
+    strength:'前例のない課題、新規開拓、誰も答えを持っていない局面で本領を発揮する。チームが「まだ早い」「リスクが高い」と躊躇しているときに、一人で先に動いて可能性を確かめてこられる。失敗を恐れず試行錯誤できるため、チームの学習速度を最速で引き上げる役割を担う。',
+    strengthExample:'例えば「このアプローチは本当に使えるのか」とチームが議論している間、斥候はすでに小さくテストして「こういう結果が出た」と持ち帰ってくる。議論より先に答えを持ってくる存在。',
+    caution:'一人で突っ走りすぎて、気づいたら周りと方向がズレていることがある。「報告しなくても大丈夫だろう」という判断が、チームとの認識のズレを生みやすい。また、自分の直感への信頼が強いため、周りの意見を「慎重すぎる」と感じて無視してしまうことも。',
+    cautionExample:'斥候が「この方向でいける」と一人で進んでいたら、チームは全く違う方向を検討していた、という場面が起きやすい。「なんで報告してくれなかったの」というすれ違いが生まれる。',
+    request:'細かく管理されると一気に動きが鈍くなる。ゴールと裁量だけ渡してもらえれば、あとは自分で考えて動ける。また、まだ形になっていない段階での報告を求められると消耗しやすい。「何かわかったら教えて」くらいの温度感で見守ってもらえると、最大限のパフォーマンスが出せる。',
+    contribution:'チームの「突破口」を開く存在。誰もやらないことへの最初の一手を打てるため、プロジェクトの初速を大きく引き上げる。また、失敗を恐れない姿勢がチーム全体の心理的安全性を高め、「やってみよう」という文化を醸成する。',
+    work:{創造:'新規領域の調査、プロトタイプ作成、実験的な企画の試行',実行:'新規開拓営業、未開拓市場へのアプローチ、スピード重視のPDCA',管理:'新しい仕組みの試験導入、課題の先行把握、リスクの早期発見',支援:'新しいツールや制度の先行導入、社内への展開準備'},
+    good:[{name:'📚 司書（NCAT）',desc:'斥候が切り開いた道を、司書が丁寧に記録・整理してくれる。行動力と堅実さが絶妙に補い合うコンビ。',scene:'斥候が「こういう方法を試してみた」と持ち帰ったとき、司書が「では手順とノウハウをまとめておきます」と動く。試行錯誤が組織の資産になっていく。'},{name:'🎶 吟遊詩人（ECIT）',desc:'斥候が単独で掴んだ発見を、吟遊詩人がチームに伝わる言葉に翻訳してくれる。突破力と共有力の理想的な分業。',scene:'斥候が「これは使える」と感じて持ち帰ったとき、吟遊詩人が「チームにとってこういう意味があるよね」と橋渡しをしてくれる。発見が埋もれずにチームに届く。'}],
+    caution_type:[{name:'📜 写本師（NDAT）',desc:'斥候の「まず動く」と写本師の「完璧に準備してから」は真逆のスタイル。お互いを補い合える関係にもなれる。',scene:'斥候が「まずやってみよう」と動き出そうとするたびに、写本師が「でもリスク確認が…手順が…」と止めようとする。スピード感がまったく合わず、どちらもフラストレーションが溜まりやすい。'}],
+  },
+  NDIT: {
+    emoji:'⚗️', name:'錬金術師', tagline:'誰も答えを知らない領域を、独自の理論で探求し続ける',
+    overview:'錬金術師は、誰も答えを知らない領域を独自の理論で探求し続ける人物だ。一人で深く考え、既存の枠組みを疑い、新しい視点を生み出すことに喜びを感じる。「なぜそうなのか」「本当にそれで正しいのか」という問いを持ち続けるため、チームの思考に深みと独創性をもたらす。アウトプットまでに時間はかかるが、一度世に出したものへの完成度へのこだわりは群を抜いている。',
+    strength:'誰も答えを持っていない問いに向き合うとき、既存の方法では解けない課題に直面したとき、チームが「これしかない」と思い込んでいるときに真価を発揮する。独自の視点で前提そのものを疑い、まったく新しいアプローチを生み出せる。',
+    strengthExample:'例えばチームが「この方法でやるしかない」と思っていた課題に対し、錬金術師が「そもそもなぜそのやり方なんだろう」と問い直すことで、誰も気づいていなかった全く別の解決策が浮かび上がってくる。',
+    caution:'「まだ完成していない」という感覚が強く、アウトプットが遅れがちになることがある。また、自分の世界観への没入が深まると、周りとのコミュニケーションが薄れてしまうことも。独立型のため、孤立しているのか集中しているのかが周りからわかりにくく、チームが不安になることがある。',
+    cautionExample:'「もう少し考えてから」が続き、締め切りを過ぎても成果物が出てこない、という場面が起きやすい。本人は「より良いものを作っている」つもりでも、周りは「どこで何をしているんだろう」と不安になる。',
+    request:'思考の途中で結論を急かされると本来の力が出にくい。「どこまで考えた？」と進捗を聞いてもらえる方が動きやすい。また、思考プロセスを共有する場を定期的に作ってもらえると、孤立せずに最大限のパフォーマンスが発揮できる。',
+    contribution:'チームが当たり前だと思っていた前提を覆す視点を提供できる存在。「そういう考え方もあるのか」という驚きをチームに与え、思考の幅を一気に広げる。行き詰まったプロジェクトに、まったく新しい突破口を開く力を持っている。',
+    work:{創造:'コンセプト開発、独自性のある企画立案、既存の枠を超えたアイデア創出',実行:'独自手法での問題解決、新しいアプローチの開発、改善策の立案',管理:'組織課題の本質把握、新しいフレームワークの導入、中長期戦略の設計',支援:'社内の仕組みの抜本的な見直し、新制度の設計、研修プログラムの開発'},
+    good:[{name:'🤝 外交官（ECAT）',desc:'錬金術師が独自の世界観で生み出したアイデアを、外交官がチームに丁寧に浸透させてくれる。創造力と調整力の理想的な組み合わせ。',scene:'錬金術師が「こういう全く新しいアプローチを考えた」と言ったとき、外交官がチームの各メンバーに「つまりこういうことで、あなたにとってはこういうメリットがある」と翻訳して届ける。'},{name:'📣 弁論家（EDAF）',desc:'錬金術師の独創的なアイデアを、弁論家が論理的に整理して力強く発信してくれる。思想と言葉が噛み合う強力なコンビ。',scene:'錬金術師が「こういう考えがある」と話したとき、弁論家が「それはつまりこういう論理で、だからこそ価値がある」と整理して発信してくれる。思考が言葉になって世界に届く。'}],
+    caution_type:[{name:'🧭 航海士（ECIF）',desc:'航海士の「とりあえず動こう」と錬金術師の「もっと深く考えたい」はぶつかりやすい。お互いの価値観を尊重する意識が大切。',scene:'航海士が「まずやってみよう！」と動き出すたびに、錬金術師は「でも本当にその方向でいいのか、もっと根本から考え直してみたい」と立ち止まる。「なぜ立ち止まるんだ」「なぜ深く考えずに進めようとするんだ」というすれ違いが続く。'}],
+  },
+  NDAF: {
+    emoji:'🌿', name:'薬師', tagline:'知識に裏付けられた判断で、的確に素早く手を打つ',
+    overview:'薬師は、知識と分析に裏付けられた判断で、的確に素早く手を打つ人物だ。データを素早く読み取り、最適な答えを静かに、しかし迷いなく実行する。派手さはないが、気づいたら誰よりも多くのことを片付けていた、というのがこのタイプの典型的な貢献の形だ。一人で集中できる環境で最も力を発揮し、無駄を嫌い、効率と精度を同時に追い求める。',
+    strength:'正確な知識と素早い判断が同時に求められる場面で輝く。チームが「どうすればいいかわからない」と立ち止まっているとき、静かに最適解を提示できる。また、誰も手をつけていないボトルネックを自分から発見して解消できるため、縁の下の力持ちとして組織の生産性を大きく底上げする。',
+    strengthExample:'例えばチームが「なぜかここだけ時間がかかる」と困っていた業務に対し、薬師が静かに調べて「このプロセスを変えればいい」と提案する。複雑な問題がシンプルに解決される場面を作れる。',
+    caution:'自分の中で答えが出たら即行動するため、周りへの共有が後回しになりがち。「報告は結果だけでいい」という意識が強くなりすぎると、チームとの認識のズレが生まれることも。また、効率重視のため、プロセスや人間関係への配慮が薄れてしまう場面もある。',
+    cautionExample:'薬師が「解決した」と思って進んでいたら、チームは「今どうなってるんだろう」と不安になっている、という場面が起きやすい。結果は出るが、プロセスが見えないため不安を与えてしまう。',
+    request:'やり方に細かく口を出されると効率が落ちる。目標とゴールだけ共有してもらえれば、あとは自分で最適な方法を見つけられる。また、「なんとなくこうしてほしい」という曖昧な依頼より、具体的なゴールと期待値を明確に伝えてもらえると動きやすい。',
+    contribution:'「誰かがやらなければいけないけど、誰もやっていない仕事」を黙々と片付けられる存在。チームの見えないボトルネックを解消し、全体の生産性を静かに底上げする。知識の深さと判断の速さで、チームが迷ったときの「答え合わせ役」にもなれる。',
+    work:{創造:'データに基づく企画の精査、競合分析、仮説検証',実行:'効率化の実行、数値管理、スピード重視の問題解決',管理:'データ分析、業務フローの最適化、コスト管理',支援:'業務マニュアル作成、ツール導入、効率化提案'},
+    good:[{name:'🧭 航海士（ECIF）',desc:'航海士が描いたビジョンを、薬師が効率よく実現してくれる。発想力と実行力が高い次元で噛み合うコンビ。',scene:'航海士が「この方向で行こう」と決めたとき、薬師が「では最短経路はこれです」と即座に実行計画を出す。方向性と実現性が綺麗に噛み合う。'},{name:'🕊️ 修道士（NCIT）',desc:'薬師の効率重視の動き方を、修道士が人間関係の面でフォローしてくれる。タスクと人への配慮を補い合える関係。',scene:'薬師がタスクを淡々と進めているとき、修道士が「メンバーがちょっと疲れてるみたいで…」と教えてくれる。薬師が気づけないチームの状態を、修道士が補ってくれる。'}],
+    caution_type:[{name:'🏛️ 哲学者（EDIT）',desc:'薬師が「最適解の実行」を求めるのに対し、哲学者は「そもそもの問いを立て直したい」と考える。視点の違いを尊重できれば深い議論ができる。',scene:'薬師が「このやり方が最も効率的」と進めようとするたびに、哲学者が「でもそもそもこのやり方自体を疑ってみるべきでは？」と立ち止まらせる。「なぜ前に進まないんだ」「なぜ疑わないんだ」という温度差が生まれやすい。'}],
+  },
+  NDAT: {
+    emoji:'📜', name:'写本師', tagline:'細部まで丁寧に確かめながら、完成度の高い仕事を積み上げる',
+    overview:'写本師は、細部まで丁寧に確かめながら、完成度の高い仕事を黙々と積み上げていく人物だ。一字一句に責任を持ち、誰も気づかないような細かいミスや抜け漏れを事前に拾い上げる。派手さはないが、このタイプがいるかいないかでチームの成果物のクオリティが大きく変わる。静かで目立たないが、「この人が確認したなら大丈夫」という絶大な信頼感を持っている。',
+    strength:'正確さと完成度が求められる場面で真価を発揮する。締め切りが迫る中でも焦らず丁寧に確認を重ね、品質を守り抜ける。また、過去の経緯や細かいルールをしっかり把握しているため、「あのときどういう経緯だったっけ？」という場面で頼りにされることが多い。',
+    strengthExample:'例えばチームが「たぶん大丈夫だろう」と思って提出しようとしていた資料を、写本師が「ここの数字が前回と違う」と指摘する。その一言で大きなミスが防がれる、という場面を何度も作れる。',
+    caution:'完璧を求めるあまり、アウトプットまでに時間がかかりすぎることがある。「もう少し確認してから」が続くと、スピードを求める場面で足かせになってしまうことも。また、自分から積極的に発信することが少ないため、貢献が見えにくくなってしまうことがある。',
+    cautionExample:'「もう一回確認させてください」が続き、チームが「そろそろ出してもいいんじゃ…」と思い始めたころもまだ確認している、という場面が起きやすい。',
+    request:'雑な指示や曖昧なゴール設定では力が出にくい。何をどこまで仕上げればいいかを明確にしてもらえると、最大限のパフォーマンスが出せる。また、急な仕様変更や方針転換が続くと消耗しやすい。変更があるときは早めに伝えてもらえると、丁寧に対応できる。',
+    contribution:'チームの「品質の番人」として機能する存在。誰も気づいていない細かいミスやリスクを事前に拾い上げ、チームの信頼性を高める。また、過去の経緯や正確な情報を誰より把握しているため、チームが同じ失敗を繰り返さないよう静かに支えている。',
+    work:{創造:'仕様書・要件定義の作成、品質管理、ドキュメント整備',実行:'正確性が求められる業務遂行、報告書作成、データ入力・管理',管理:'リスク管理、監査対応、規程・ルールの整備',支援:'マニュアル作成、議事録作成、社内ナレッジの整理'},
+    good:[{name:'🧭 航海士（ECIF）',desc:'航海士が勢いよく進む中で、写本師が細かい抜け漏れを拾い上げてくれる。スピードと精度を補い合える黄金コンビ。',scene:'航海士が「このまま進もう」と言ったとき、写本師が「ここだけ確認させてください」と一言添える。大きなミスを防ぎながら、前進の勢いを止めない絶妙なバランスが生まれる。'},{name:'⚖️ 裁判官（EDAT）',desc:'どちらも正確さを重視するが、裁判官が「判断」し、写本師が「記録・整備」する。役割が明確に分かれており、高い次元で連携できる。',scene:'裁判官が「この方針で行く」と決めたとき、写本師が「では経緯と根拠を記録しておきます」と動く。判断と記録が綺麗に分業される。'}],
+    caution_type:[{name:'🗺️ 斥候（NDIF）',desc:'斥候の「まず動く」と写本師の「完璧に準備してから」は真逆のスタイル。お互いを補い合える関係にもなれる。',scene:'斥候が「まずやってみよう」と動き出すたびに、写本師が「リスク確認が終わっていない、手順書がまだ…」と追いかける。スピード感がまったく合わず、どちらもフラストレーションが溜まりやすい。'}],
+  },
+  EDIF: {
+    emoji:'🔮', name:'預言者', tagline:'誰もまだ気づいていない変化の兆しを、いち早く声に上げる',
+    overview:'預言者は、誰もまだ気づいていない変化の兆しをいち早く察知し、声に上げる人物だ。データより直感を信じ、自分の確信を力強い言葉で発信できる。「なぜそう思うの？」と問われても、後から必ず理由がついてくる。現状維持に安住することを嫌い、常に「次の景色」を見ようとするエネルギーが、チームを停滞から救い出す原動力になる。',
+    strength:'組織が変化の岐路に立っているとき、誰もが現状に慣れすぎているとき、新しい方向性が必要なときに真価を発揮する。変化の兆しを感じ取る感度が高く、「このままではまずい」という直感的な警告をいち早く発信できる。',
+    strengthExample:'例えばまだ誰も問題だと思っていない段階で、預言者が「この流れが続いたら半年後にまずいことになる」と言い始める。最初は「大げさでは？」と思われても、後から「あのとき言ってた通りだった」と評価されることが多い。',
+    caution:'確信が強すぎて、周りの意見を無意識に聞き流してしまうことがある。直感が外れたときに修正が遅れがちで、「あのとき立ち止まればよかった」という場面も。また、変化を求めるあまり、今うまくいっていることへの評価が薄くなりやすい。',
+    cautionExample:'「変わらなければいけない」という思いが強すぎて、今の体制や積み上げてきたものを「古い」と切り捨ててしまい、チームのモチベーションを下げてしまうことがある。',
+    request:'根拠がないからといって頭ごなしに否定されると力が出にくい。「まず聞いてみる」姿勢で接してもらえると、良いアイデアが引き出される。また、ある程度の裁量と信頼を持って動かせてもらえることが、このタイプの最大のエネルギー源になる。',
+    contribution:'チームが現状維持に甘んじているときに「このままでいいのか？」と問いかけられる存在。変化の必要性をいち早く察知し、チームを次のステージへ引っ張る。また、強い発信力でチームのモチベーションを一気に引き上げる力も持っている。',
+    work:{創造:'トレンド察知、新規事業の構想、未来志向の企画立案',実行:'新規開拓、変化への素早い対応、スピード重視の意思決定',管理:'組織の方向性の見直し、変化への先手対応、中長期ビジョンの策定',支援:'社内への新しい風の吹き込み、変化の必要性の啓発'},
+    good:[{name:'🤝 外交官（ECAT）',desc:'預言者が描く大きなビジョンを、外交官がチーム全体に丁寧に浸透させてくれる。「先を見る人」と「まとめる人」の理想的な役割分担。',scene:'預言者が「会社はこの方向に変わるべきだ」と宣言したとき、外交官が各メンバーの不安を聞きながら「こういうことですよね」と丁寧に翻訳する。ビジョンが現場に根付いていく。'},{name:'🌿 薬師（NDAF）',desc:'預言者が方向性を示し、薬師が素早く実行に移してくれる。直感と実行力が噛み合う強力なコンビ。',scene:'預言者が「この方向で行こう」と声を上げたとき、薬師が静かに「では最初のステップはこれです」と動き出す。言葉と行動が綺麗に連動する。'}],
+    caution_type:[{name:'📜 写本師（NDAT）',desc:'預言者の「変化を起こしたい」と写本師の「確実に積み上げたい」はぶつかりやすい。お互いの価値観を尊重できれば変化と安定のバランスが取れる。',scene:'預言者が「今すぐ変えていこう」と言うたびに、写本師が「でも今の仕組みで積み上げてきたものが…リスクが…」と慎重になる。「なぜ変えられないんだ」「なぜ急ぐんだ」という温度差が生まれやすい。'}],
+  },
+  EDIT: {
+    emoji:'🏛️', name:'哲学者', tagline:'独自の視点で本質を捉え、言葉に力を宿して世界に問いかける',
+    overview:'哲学者は、独自の視点で物事の本質を捉え、言葉に力を宿してチームに問いを投げかける人物だ。「そもそもこれは何のためにやるのか」という問いを大切にし、表面的な議論より本質的な対話を好む。自分の考えへの確信が強く、一度信じたことは根拠が揃うまで揺るがない。発信力があるため、その言葉はチームに深く刺さり、長く記憶される。',
+    strength:'チームが「なんとなく進んでいる」状態、目的を見失いかけているとき、判断の軸がブレているときに真価を発揮する。「なぜやるのか」という問いに立ち返ることで、チームの行動に意味と方向性を与えられる。長期的な視点でものごとを捉えるため、目先の問題に振り回されがちなチームに落ち着きをもたらす。',
+    strengthExample:'例えばプロジェクトが行き詰まったとき、哲学者が「そもそも私たちはなぜこれをやっているんだっけ」と問いかける。その一言でチームが立ち止まり、本質に立ち返ることで、まったく新しい解決策が見えてくる。',
+    caution:'納得いくまで考え抜くため、行動に移るまでに時間がかかることがある。また自分の考えへの確信が強く、異なる意見を受け入れにくい場面も。「正しいことを言っているのに、なぜ伝わらないんだろう」と感じやすく、伝え方への意識が成長のカギになる。',
+    cautionExample:'哲学者が「根本的に考え直すべきだ」と言い続けるあまり、「また抽象的な話が始まった」とチームが疲弊してしまう場面が起きやすい。言葉の重さと日常業務のバランスが難しい。',
+    request:'表面的な議論より本質的な対話を好む。「なぜそうするのか」という目的レベルの話し合いの場を作ってもらえると最大限貢献できる。また、結論を急かされず、じっくり考える時間を確保してもらえると、より深い洞察を届けられる。',
+    contribution:'チームに「なぜやるのか」という軸を与えられる存在。目的を見失いかけたプロジェクトを本質に立ち返らせ、チームの行動に一貫性をもたらす。また、長期的な視点と深い思考でチームのビジョン設計に大きく貢献する。',
+    work:{創造:'コンセプト設計、ブランド戦略、本質的な課題定義',実行:'提案の差別化、顧客の本質的なニーズの把握、独自アプローチの開発',管理:'組織のビジョン・ミッション設計、文化づくり、評価基準の設計',支援:'理念浸透、社内研修の設計、採用コンセプトの策定'},
+    good:[{name:'⚔️ 騎士団長（ECAF）',desc:'哲学者が「なぜ」を定義し、騎士団長が「どうやって」を実行する。本質と実行力が噛み合う力強いコンビ。',scene:'哲学者が「私たちがやるべき本質はこれだ」と定義したとき、騎士団長が「ではデータ的にはこのアプローチが最善」と即座に動き出す。思想が現実になっていく瞬間が生まれる。'},{name:'🏮 灯台守（NCIF）',desc:'哲学者の深い問いを、灯台守がチームの空気を読みながら丁寧に届けてくれる。思想と感性が補い合う関係。',scene:'哲学者の言葉が少し重すぎてチームが固まってしまったとき、灯台守が「要はこういうことですよね」とやさしく翻訳してくれる。思想が届きやすくなる。'}],
+    caution_type:[{name:'🌿 薬師（NDAF）',desc:'哲学者が「問いを立て直したい」と考えるのに対し、薬師は「最適解をすぐ実行したい」と動く。視点の違いを尊重できれば深い議論ができる。',scene:'哲学者が「そもそもこのやり方自体を疑ってみたい」と言うたびに、薬師が「でも今あるデータから最善手は出ている、動こう」と前に進もうとする。議論と行動のリズムがまったく噛み合わない。'}],
+  },
+  EDAF: {
+    emoji:'📣', name:'弁論家', tagline:'データと論理で武装し、人前で力強く意見を述べる',
+    overview:'弁論家は、データと論理で武装し、人前で力強く意見を述べる人物だ。根拠が明確で言葉に説得力があるため、会議や交渉の場で自然と存在感を発揮する。発信型で独立型のエネルギーを持つため、周りに流されず、自分の分析に基づいた主張を貫ける。「この人が言うなら正しいはずだ」という信頼感が、弁論家の最大の武器になる。',
+    strength:'データと論理を使って人を動かすことが求められる場面で輝く。プレゼン、交渉、説明会など、言葉で相手を動かす局面では16タイプ随一の力を発揮する。また、チームの意見や成果を外部に発信する役割においても、説得力のある言葉でチームの価値を最大限に伝えられる。',
+    strengthExample:'例えばクライアントへの提案会議で、チームが「どう説明すればいいか」と悩んでいるとき、弁論家が「このデータを使ってこの順番で話せば伝わる」と即座に組み立て、場を引っ張っていく。',
+    caution:'論理的に正しくても、相手の感情や背景を置いてけぼりにしてしまうことがある。「正しいこと」と「伝わること」は別物で、論理だけでは人の心は動かないことを意識したい。また、自分の分析への自信が強いため、異なる意見を受け入れるのに時間がかかることも。',
+    cautionExample:'弁論家が「データ的にはこれが正解」と力強く言ったとき、相手は「論破された」と感じてしまい、表面上は納得しても心では受け入れていない、という場面が起きやすい。',
+    request:'感情論や根拠のない反対意見には対応が難しい。データや具体的な事実をベースに話し合える環境を作ってもらえると力を発揮できる。また、発信の場をしっかり設けてもらえると、チームへの貢献度が大きく上がる。',
+    contribution:'チームの意見や取り組みを、外部に対して力強く発信できる存在。「この人に任せれば伝わる」という信頼感がチームの発信力を底上げする。社内でも「この人が言うなら間違いない」という安心感を与え、意思決定のスピードを上げる。',
+    work:{創造:'データに基づくコンセプト立案、プレゼン資料作成、提案書の作成',実行:'プレゼン営業、交渉、数字を使った説得',管理:'経営報告、数値を使ったチームへのフィードバック、目標設定会議のファシリテーション',支援:'社内説明会の登壇、制度変更の説明、採用説明会'},
+    good:[{name:'⚗️ 錬金術師（NDIT）',desc:'錬金術師の独創的なアイデアを、弁論家が論理的に整理して力強く発信してくれる。思想と言葉が噛み合う強力なコンビ。',scene:'錬金術師が「こういう考えがある」と話したとき、弁論家が「それはつまりこういう論理で、だからこそ価値がある」と整理して発信してくれる。思考が言葉になって世界に届く。'},{name:'🕊️ 修道士（NCIT）',desc:'弁論家が論理で動かせない場面を、修道士が共感と対話でフォローしてくれる。論理と感情のバランスが取れるコンビ。',scene:'弁論家が正論を言ったあとに場が固まってしまったとき、修道士が「みなさんどう感じましたか？」とやさしく問いかける。論理で動いた心を、感情でほぐしてくれる。'}],
+    caution_type:[{name:'🎶 吟遊詩人（ECIT）',desc:'弁論家が「論理的な正しさ」を優先するのに対し、吟遊詩人は「場の合意」を重視する。アプローチへの理解がないと会議で空回りしやすい。',scene:'弁論家が「データ的には答えが出ている、進めよう」と言うたびに、吟遊詩人が「でもまだ全員の意見が出揃っていない…」と止めようとする。「なぜ決められないんだ」「なぜ人の気持ちを無視するんだ」というすれ違いが続く。'}],
+  },
+  EDAT: {
+    emoji:'⚖️', name:'裁判官', tagline:'証拠を積み上げ、公正で重みある判断を下す',
+    overview:'裁判官は、複雑な情報を整理して、公正で重みある判断を下す人物だ。感情に左右されず、根拠に基づいた結論を出せるため、重要な意思決定の場で頼りにされる。徹底的に考え抜いてから発信するため、言葉に重みがあり、チームに安定感をもたらす。「正しいことを正しく判断する」という強い信念を持ち、妥協を嫌う。',
+    strength:'重要な意思決定、リスク判断、公正さが求められる場面で真価を発揮する。感情的になりがちな議論を冷静に整理し、事実と意見を分けて道筋を示せる。徹底的に考え抜いた発言はチームへの説得力が高く、「裁判官がそう言うなら」という信頼感が意思決定のスピードを上げることも多い。',
+    strengthExample:'例えばチームが感情的に議論している中で、裁判官が「今まで出た意見を整理すると、事実はこれで、意見はこれで、だから判断すべきはこれ」と静かに整理する。場が一気に落ち着き、議論が前に進む。',
+    caution:'慎重すぎて決断が遅くなることがある。また、正論を振りかざすあまり、周りが委縮してしまうことも。「正しさ」だけを追求すると、チームの心理的安全性が下がってしまうことがあるため、「温かさ」を意識する場面も大切にしたい。',
+    cautionExample:'裁判官が「それは論理的に正しくない」と指摘したとき、指摘された側は「否定された」と感じてしまい、次から意見を言いにくくなる、という場面が生まれやすい。',
+    request:'曖昧な情報や感情的な議論が続くと消耗しやすい。事実と意見を分けて話してもらえると最大限力を発揮できる。また、急な方針変更や不透明な意思決定プロセスにはストレスを感じやすいため、決定の経緯を丁寧に共有してもらえると動きやすい。',
+    contribution:'チームが感情的になっているときに、冷静に事実を整理して道筋を示せる存在。チームの「公正な判断軸」として機能し、後から「あの判断は正しかった」と振り返られることが多い。',
+    work:{創造:'企画の精査・評価、意思決定基準の設計、品質チェック',実行:'クレーム対応、契約確認、リスクを伴う判断業務',管理:'人事評価、予算審査、コンプライアンス管理',支援:'社内規程の整備、トラブル対応、公正な第三者としての調整'},
+    good:[{name:'🧭 航海士（ECIF）',desc:'航海士の直感的な判断を、裁判官が論理的に補強してくれる。「感じる人」と「判断する人」の力強いコンビ。',scene:'航海士が「なんとなくこっちがいい気がする」と言ったとき、裁判官が「データ的にもその方向が正しい、根拠はこれ」と補強する。直感が根拠を持って動き出す。'},{name:'🏮 灯台守（NCIF）',desc:'裁判官が論理で整理した判断を、灯台守が場の空気を読みながら柔らかく届けてくれる。論理と感性が補い合う関係。',scene:'裁判官が「この判断が正しい」と示した後、灯台守が「みんながどう受け取るか」を読みながら伝え方を調整してくれる。正しさが受け入れられやすい形で届く。'}],
+    caution_type:[{name:'⚗️ 錬金術師（NDIT）',desc:'裁判官が「根拠ある判断」を求めるのに対し、錬金術師は「前提そのものを疑いたい」と動く。視点を尊重できれば深い議論ができる。',scene:'裁判官が「この根拠に基づいてこう判断する」と言うたびに、錬金術師が「でもその根拠自体を疑ってみたい」と立ち止まらせる。「早く決めよう」「いや待って」という温度差が続く。'}],
+  },
+  NCIF: {
+    emoji:'🏮', name:'灯台守', tagline:'嵐を察知し、静かにチームを正しい方向へ導く',
+    overview:'灯台守は、嵐を察知し、静かにチームを正しい方向へ導く人物だ。派手な発言や行動はしないが、チームの「見えないひずみ」を誰より早く感じ取り、さりげなく手を打てる。協調型で内省型のエネルギーを持つため、場の空気を読む力が高く、誰かが困っていることに自然と気づける。縁の下の力持ちとして、チームの安定を静かに支えている。',
+    strength:'チームが混乱しているとき、誰も気づいていない問題が水面下で起きているとき、人間関係に微妙なひずみが生まれているときに真価を発揮する。「なんかおかしいな」という感覚を誰より早く掴み、大きな問題になる前に静かに手を打てる。',
+    strengthExample:'例えばチームの雰囲気がじわじわと重くなってきたとき、灯台守が「最近Aさんちょっと元気なさそうで…」と気づいて声をかける。その一言が、表面化する前の問題を防ぐきっかけになる。',
+    caution:'場の空気を読みすぎて、自分の意見を後回しにしてしまうことがある。「察して動く」が得意な分、自分自身が何を思っているかをチームに伝えることが苦手になりがち。また、誰かのために動きすぎて、自分が消耗してしまうことにも注意が必要。',
+    cautionExample:'「みんながよければ自分はいい」という姿勢が続くと、気づいたら自分が一番疲弊していた、という状況が生まれやすい。周りは灯台守の消耗になかなか気づけない。',
+    request:'縁の下の動きを見てもらえていないと、じわじわ消耗してしまう。「気づいてくれてありがとう」の一言がとても大きな力になる。また、自分の意見を求めるときは積極的に声をかけてもらえると、本音を伝えやすくなる。',
+    contribution:'チームの「見えないひずみ」を誰より早く感じ取れる存在。大きな問題になる前に静かに手を打つことで、チームを守っている。また、困っている人への自発的なサポートで、チームの心理的安全性を底上げする。',
+    work:{創造:'ユーザー視点でのアイデア出し、潜在ニーズの発掘、チームの課題察知',実行:'顧客の困りごとの先回り対応、現場の異変への素早い対処',管理:'チームの雰囲気のモニタリング、早期のリスク察知と対処',支援:'困っている人への自発的なサポート、チームの潤滑油役'},
+    good:[{name:'📣 弁論家（EDAF）',desc:'灯台守が察知したチームの空気を、弁論家が言葉にして力強く発信してくれる。感性と発信力が噛み合うコンビ。',scene:'灯台守が「チームがなんか重い空気になってる気がする」と感じたとき、弁論家が「では今の課題を整理して全員に話しましょう」と動き出す。感知と発信が綺麗に連動する。'},{name:'⚖️ 裁判官（EDAT）',desc:'灯台守が感じ取った問題を、裁判官が論理的に整理して解決してくれる。感性と論理が補い合う関係。',scene:'灯台守が「なんかここがうまくいってない気がする」と伝えたとき、裁判官が「では事実を整理して原因を特定しましょう」と動く。感覚が論理で解明されていく。'}],
+    caution_type:[{name:'📣 弁論家（EDAF）',desc:'灯台守の「場の空気を大切に」に対し、弁論家の直接的な発言スタイルが摩擦になることがある。役割分担できると強いチームになれる。',scene:'弁論家が「データ的にはこれが正解、問題はない」と言い切ったとき、灯台守は「でもみんなの顔が…雰囲気が…」と感じている。論理と感性がすれ違い、灯台守が「わかってもらえない」と消耗しやすい。'}],
+  },
+  NCIT: {
+    emoji:'🕊️', name:'修道士', tagline:'深い共感と静かな存在感で、チームの心理的安全性を高める',
+    overview:'修道士は、深い共感と静かな存在感で、チームの心理的安全性を高める人物だ。誰もが安心して話せる雰囲気を自然と作り出し、抱えているモヤモヤを引き出す力を持つ。内省型で協調型のエネルギーを持つため、自分の内側で深く考えながらも、チームとの調和を何より大切にする。派手さはないが、「この人がいるとチームが落ち着く」という安心感が最大の貢献になる。',
+    strength:'人間関係が複雑になっているとき、チームの雰囲気が重くなっているとき、誰かが傷ついているときに真価を発揮する。「この人には話せる」と感じさせる空気を自然と作り出し、誰もが本音を言いやすい環境を整える。',
+    strengthExample:'例えばチームに問題が起きてみんなが口を閉ざしている中で、修道士に「実はこう思ってて…」と一人が話し始める。その一言をきっかけに、チーム全体の本音が出てくる、という場面を自然と作れる。',
+    caution:'周りの感情を受け取りすぎて、自分が消耗してしまうことがある。人の悩みを「自分ごと」にしすぎず、適切な距離感を保つ意識が大切。また、自分の意見を発信することへの抵抗感があるため、「何を考えているかわからない」と思われてしまうことがある。',
+    cautionExample:'チームの誰かが抱えている問題を「自分のことのように」感じすぎてしまい、本人より修道士の方が落ち込んでいる、という場面が起きやすい。',
+    request:'急かされたり、感情を無視した進め方をされると力が出にくい。話す場と考える時間をしっかり確保してもらえると最大限貢献できる。また、自分から発信するのが苦手なため、定期的に「どう思う？」と聞いてもらえると本音が伝えやすくなる。',
+    contribution:'チームの中で「この人には話せる」と思われる存在。誰かが抱えているモヤモヤを引き出し、チームの心理的安全性を高める。また、深い共感力でメンバーのコンディションを把握し、チームが健全に動き続けるための土台を作る。',
+    work:{創造:'ユーザーインタビュー、共感をベースにした企画、チームの合意形成',実行:'丁寧な顧客対応、信頼関係を築く営業、長期的な関係構築',管理:'1on1、メンバーのコンディション管理、チームビルディング',支援:'相談窓口、メンタルサポート、新人のオンボーディング'},
+    good:[{name:'📣 弁論家（EDAF）',desc:'修道士が感情面でフォローし、弁論家が論理で動かす。感情と論理のバランスが取れる理想的なコンビ。',scene:'弁論家が正論を言ったあとに場が固まってしまったとき、修道士が「みなさんどう感じましたか？」とやさしく問いかける。論理で動いた心を、感情でほぐしてくれる。'},{name:'🗺️ 地図師（NCAF）',desc:'修道士が人間関係を整え、地図師が仕事の道筋を整える。チームの人とタスクを両面でケアできる組み合わせ。',scene:'修道士が「チームの雰囲気はいい感じ」と確認したとき、地図師が「では次のステップはこれ」と動き出す。人とタスクが同時に整っていく。'}],
+    caution_type:[{name:'🗺️ 斥候（NDIF）',desc:'修道士の「チームの合意を大切に」に対し、斥候の「とりあえず動く」スタイルは摩擦を生みやすい。お互いの役割を理解した上で動くと強いチームになれる。',scene:'斥候が「決まってないけどとりあえず動きます」と言うたびに、修道士が「でもまだ全員が納得してないし、みんなの気持ちが…」と心配する。「なぜ待つんだ」「なぜ気持ちを無視するんだ」というすれ違いが起きやすい。'}],
+  },
+  NCAF: {
+    emoji:'🗺️', name:'地図師', tagline:'データと周囲の状況を同時に読み、全員が迷わない道を描く',
+    overview:'地図師は、データと周囲の状況を同時に読みながら、チーム全員が迷わない道を描く人物だ。複雑な状況を整理して見える化する力に長けており、「何をすればいいかわからない」状態のチームに道筋を与えられる。内省型でありながら協調型のエネルギーを持つため、一人で深く考えながらもチームとの調和を大切にする。着実で堅実なこのタイプがいると、チームは迷わず進める。',
+    strength:'チームが「何をすればいいかわからない」状態、複雑なプロジェクトで全体像が見えにくいとき、リソースの配分が難しいときに真価を発揮する。データと人の動きを同時に把握しながら、最適な道筋をチーム全体に示せる。',
+    strengthExample:'例えば複数のプロジェクトが同時進行していてチームが混乱しているとき、地図師が「優先順位はこれで、誰が何をすべきかはこう」と整理する。混乱が一気に収束し、チームが動き出せる。',
+    caution:'全員が迷わないよう気を配りすぎて、自分のペースが乱れることがある。「完璧な地図」を作ろうとするより、まず動きながら修正する意識も大切。また、内省型のため、自分の考えをチームに発信することへの抵抗感が出ることがある。',
+    cautionExample:'「全員が迷わないように」と考えるあまり、地図を完璧に仕上げようとして時間がかかりすぎ、チームがそもそも動き出せない、という場面が起きやすい。',
+    request:'場当たり的な指示や、コロコロ変わる方針には対応が難しい。全体の方向性を共有してもらえると、最適な道筋を考えやすくなる。また、考える時間を確保してもらえると、より精度の高いアウトプットが出せる。',
+    contribution:'チームが「何をすればいいかわからない」状態のときに、やるべきことを整理して見える化できる存在。チームの羅針盤として機能し、迷子になりがちなプロジェクトを正しい方向へ導く。',
+    work:{創造:'プロジェクト設計、ロードマップ作成、全体像の見える化',実行:'タスク整理、進捗の見える化、業務フローの整備',管理:'プロジェクト管理、スケジュール設計、リソース配分',支援:'業務の棚卸し、マニュアル整備、社内の情報整理'},
+    good:[{name:'🔮 預言者（EDIF）',desc:'預言者が描く大きな未来像を、地図師が具体的なロードマップに落とし込んでくれる。ビジョンと実行計画が噛み合う力強いコンビ。',scene:'預言者が「こういう未来に向かうべきだ」と言ったとき、地図師が「では今から1年の道筋はこれです」と即座に地図を描く。夢が現実の計画になっていく。'},{name:'🕊️ 修道士（NCIT）',desc:'地図師が仕事の道筋を整え、修道士が人間関係を整える。タスクと人を両面でケアできる組み合わせ。',scene:'地図師が「次のステップはこれ」と示したとき、修道士が「みんなのコンディションはどうかな」と確認する。仕事と人の両方が整っていく。'}],
+    caution_type:[{name:'🔮 預言者（EDIF）',desc:'地図師の「着実に進めたい」に対し、預言者の「変化を起こしたい」はペースがぶつかりやすい。視点を尊重できれば変化と安定のバランスが取れる。',scene:'地図師が「この計画通りに進めましょう」と言ったとき、預言者が「でもそもそもこの方向性自体を変えてみては？」と言い出す。「やっと計画が固まったのに」「計画に縛られてはいけない」というすれ違いが起きやすい。'}],
+  },
+  NCAT: {
+    emoji:'📚', name:'司書', tagline:'正確な知識と丁寧な合意形成で、チームの完成度を静かに底上げする',
+    overview:'司書は、正確な知識と丁寧な合意形成で、チームの完成度を静かに底上げする人物だ。膨大な情報を整理して、必要な人に必要なものを届けられる。一人で深く考えながらもチームとの調和を大切にするため、「静かで頼りになる」という安心感を周りに与える。過去の経緯や正確な情報を誰より把握しており、チームの「知識と記録の番人」として機能する。',
+    strength:'正確な情報と丁寧な合意形成が同時に求められる場面で輝く。誰も見落としていた細かい点に気づき、チーム全体の完成度を底上げできる。また、過去の経緯を正確に把握しているため、「前回どういう話だったっけ？」という場面で頼りにされることが多い。',
+    strengthExample:'例えばチームが同じ失敗を繰り返しそうになったとき、司書が「以前も同じことがあって、そのときはこういう経緯でこうなりました」と教えてくれる。歴史が繰り返されることを防ぐ存在。',
+    caution:'慎重に進めるあまり、スピードが求められる場面で遅れをとることがある。また、自分から意見を発信することが少ないため、存在感が薄れてしまうことも。「もっと意見を言ってほしい」と思われているのに、本人は「求められていない」と感じているすれ違いが起きやすい。',
+    cautionExample:'司書が「もう少し情報を整理してから」と思っている間に、チームは「なぜ動いてくれないんだろう」と感じている。本人の慎重さと周りの期待のズレが生まれやすい。',
+    request:'雑な進め方や、プロセスを無視した決定には違和感を覚えやすい。丁寧に話し合いながら進める文化の中で最大限力を発揮できる。また、自分から発信するのが苦手なため、意見を求めるときは積極的に声をかけてもらえると助かる。',
+    contribution:'チームの「知識と記録の番人」として機能する存在。過去の経緯や正確な情報を誰より把握しており、チームが同じ失敗を繰り返さないよう静かに支えている。また、誰も見落としていた細かい点に気づく力で、チームの成果物の質を底上げする。',
+    work:{創造:'リサーチ、情報整理、ナレッジベースの構築',実行:'正確性が求められる業務、情報収集・整理、議事録・報告書作成',管理:'情報管理、ナレッジ共有の仕組みづくり、リスク管理',支援:'社内情報の整備、ノウハウの言語化、引き継ぎ資料の作成'},
+    good:[{name:'🗺️ 斥候（NDIF）',desc:'斥候が切り開いた道を、司書が丁寧に記録・整理してくれる。行動力と堅実さが絶妙に補い合うコンビ。',scene:'斥候が「こういう方法を試してみた」と持ち帰ったとき、司書が「では手順とノウハウをまとめておきます」と動く。試行錯誤が組織の資産になっていく。'},{name:'🧭 航海士（ECIF）',desc:'航海士が勢いよく進む中で、司書が記録と整理で後方支援してくれる。推進力と安定感が噛み合う組み合わせ。',scene:'航海士が「どんどん進もう」と突き進む中で、司書が「今まで決まったことをここにまとめておきます」と動く。前に進みながら記録が積み上がっていく。'}],
+    caution_type:[{name:'🔮 預言者（EDIF）',desc:'司書の「確実に積み上げたい」に対し、預言者の「変化を起こしたい」はぶつかりやすい。価値観を尊重できれば変化と安定のバランスが取れる。',scene:'司書が「今まで積み上げてきたものを大切にしながら進みたい」と思っているとき、預言者が「そのやり方自体を変えていこう」と言い始める。「今まで何のために積み上げてきたんだ」「変化を恐れるな」という温度差が生まれやすい。'}],
+  },
+};
+
+const questions_data = questions;
+let currentQ = 0;
+let answers = {};
+let profile = { nature: null, position: null };
+
+function startDiagnosis() {
+  document.getElementById('intro-page').style.display = 'none';
+  document.getElementById('question-page').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions_data[currentQ];
+  const pct = Math.round((currentQ / questions_data.length) * 100);
+  document.getElementById('progress-text').textContent = `質問 ${currentQ + 1} / ${questions_data.length}`;
+  document.getElementById('progress-pct').textContent = `${pct}%`;
+  document.getElementById('progress-fill').style.width = `${pct}%`;
+
+  const labelArea = document.getElementById('section-label-area');
+  const info = sectionInfo[q.id];
+  if (info) {
+    labelArea.innerHTML = `<div class="section-label">✦ ${info.label}｜${info.desc} ✦</div>`;
+  } else {
+    labelArea.innerHTML = '';
+  }
+
+  const selected = answers[q.id];
+  let html = `<div class="question-block">
+    <div class="question-number">Q${String(q.id).padStart(2,'0')}</div>
+    <div class="question-text">${q.text}</div>
+    <div>
+      <div class="scale-labels"><span>全くそう思わない</span><span>非常にそう思う</span></div>
+      <div class="scale-options">`;
+  for (let i = 1; i <= 5; i++) {
+    html += `<div class="scale-option"><button class="scale-btn ${selected === i ? 'selected' : ''}" onclick="selectAnswer(${q.id}, ${i})">${i}</button></div>`;
+  }
+  html += `</div></div></div>`;
+  document.getElementById('question-area').innerHTML = html;
+
+  document.getElementById('btn-back').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+  document.getElementById('btn-next').disabled = !answers[q.id];
+  document.getElementById('btn-next').textContent = currentQ === questions_data.length - 1 ? 'プロフィールへ →' : '次へ →';
+}
+
+function selectAnswer(qId, val) {
+  answers[qId] = val;
+  document.querySelectorAll('.scale-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i + 1 === val);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQuestion() {
+  if (currentQ < questions_data.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    document.getElementById('question-page').style.display = 'none';
+    document.getElementById('profile-page').style.display = 'block';
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function backToQuestions() {
+  document.getElementById('profile-page').style.display = 'none';
+  document.getElementById('question-page').style.display = 'block';
+  renderQuestion();
+}
+
+function selectNature(val) {
+  profile.nature = val;
+  document.querySelectorAll('#nature-options .profile-btn').forEach(btn => btn.classList.toggle('selected', btn.dataset.value === val));
+  checkProfileComplete();
+}
+
+function selectPosition(val) {
+  profile.position = val;
+  document.querySelectorAll('#position-options .profile-btn').forEach(btn => btn.classList.toggle('selected', btn.dataset.value === val));
+  checkProfileComplete();
+}
+
+function checkProfileComplete() {
+  document.getElementById('btn-profile-next').disabled = !(profile.nature && profile.position);
+}
+
+function calcScore() {
+  const scores = { info: 0, energy: 0, action: 0, relation: 0 };
+  const reverseDir = { analytical: true, introspective: true, deliberate: true, independent: true };
+  questions_data.forEach(q => {
+    const val = answers[q.id] || 3;
+    const score = reverseDir[q.dir] ? (6 - val) : val;
+    scores[q.axis] += score;
+  });
+  const E = scores.energy > 20 ? 'E' : 'N';
+  const C = scores.relation > 20 ? 'C' : 'D';
+  const I = scores.info > 20 ? 'I' : 'A';
+  const F = scores.action > 20 ? 'F' : 'T';
+  return { code: E+C+I+F, E, C, I, F };
+}
+
+function showResult() {
+  document.getElementById('profile-page').style.display = 'none';
+  const { code, E, C, I, F } = calcScore();
+  const t = typeData[code];
+  const group = E + C;
+  const gd = groupData[group];
+
+  const html = `
+    <div class="result-seal">
+      <span class="result-emoji">${t.emoji}</span>
+      <div class="result-type-code">${code}</div>
+      <div class="result-type-name">${t.name}</div>
+      <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+      <div class="result-tagline">${t.tagline}</div>
+    </div>
+
+    <div class="result-group-box">
+      <div class="result-group-label">✦ あなたのグループ</div>
+      <div class="result-group-name">${gd.name}</div>
+      <div class="result-group-desc">${gd.desc}</div>
+    </div>
+
+    <div class="result-axes">
+      <div class="axis-result-card"><div class="axis-result-label">ENERGY</div><div class="axis-result-value">${axisNames.energy[E]}</div></div>
+      <div class="axis-result-card"><div class="axis-result-label">RELATION</div><div class="axis-result-value">${axisNames.relation[C]}</div></div>
+      <div class="axis-result-card"><div class="axis-result-label">INFO</div><div class="axis-result-value">${axisNames.info[I]}</div></div>
+      <div class="axis-result-card"><div class="axis-result-label">ACTION</div><div class="axis-result-value">${axisNames.action[F]}</div></div>
+    </div>
+
+    <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+
+    <div class="result-section">
+      <div class="result-section-title">タイプ概要</div>
+      <div class="result-section-text">${t.overview}</div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section-title">強みが発揮されるとき</div>
+      <div class="result-section-text">${t.strength}</div>
+      <div class="result-example">💡 ${t.strengthExample}</div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section-title">気をつけたいパターン</div>
+      <div class="result-section-text">${t.caution}</div>
+      <div class="result-example">⚠️ ${t.cautionExample}</div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section-title">周りへのリクエスト</div>
+      <div class="result-section-text">${t.request}</div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section-title">チームへの貢献</div>
+      <div class="result-section-text">${t.contribution}</div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section-title">得意な業務</div>
+      <div class="work-nature-tabs">
+        ${['創造','実行','管理','支援'].map(n => `<button class="work-tab ${n === profile.nature ? 'active' : ''}" onclick="switchWorkTab('${n}', this, '${code}')">${n === profile.nature ? n + '（あなたの仕事）' : n}</button>`).join('')}
+      </div>
+      <div class="work-content" id="work-content">${t.work[profile.nature]}</div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-section-title">相性・連携</div>
+      <div class="compat-grid">
+        ${t.good.map(g => `
+          <div class="compat-card good">
+            <div class="compat-label">✦ 相性の良いタイプ</div>
+            <div class="compat-type-name">${g.name}</div>
+            <div class="compat-desc">${g.desc}</div>
+            <div class="compat-scene">💬 ${g.scene}</div>
+          </div>
+        `).join('')}
+        ${t.caution_type.map(c => `
+          <div class="compat-card caution">
+            <div class="compat-label">⚠ 注意が必要なタイプ</div>
+            <div class="compat-type-name">${c.name}</div>
+            <div class="compat-desc">${c.desc}</div>
+            <div class="compat-scene">💬 ${c.scene}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="academic-note">
+      <div class="academic-note-title">✦ この診断について</div>
+      <div class="academic-note-text">
+        本診断はMBTI・ユング心理学の類型論、ビッグファイブ理論（外向性・開放性・協調性）、DiSCモデル、およびKahnemanの「速い思考・遅い思考」（認知スタイル研究）を参考に、職場環境に特化してオリジナルで設計したものです。学術的な信頼性・妥当性の検証は今後の課題です。あくまで自己理解とチームコミュニケーションのきっかけとしてご活用ください。
+      </div>
+    </div>
+
+    <button class="btn-retry" onclick="retry()">もう一度診断する</button>
+  `;
+
+  document.getElementById('result-page').innerHTML = html;
+  document.getElementById('result-page').style.display = 'block';
+}
+
+function switchWorkTab(nature, btn, code) {
+  document.querySelectorAll('.work-tab').forEach(t => { t.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('work-content').textContent = typeData[code].work[nature];
+}
+
+function retry() {
+  currentQ = 0;
+  answers = {};
+  profile = { nature: null, position: null };
+  document.getElementById('result-page').style.display = 'none';
+  document.getElementById('result-page').innerHTML = '';
+  document.getElementById('intro-page').style.display = 'block';
+}
+</script>
+</body>
+</html>
