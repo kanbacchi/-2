@@ -153,6 +153,57 @@
 
   .btn-retry { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; cursor: pointer; margin-top: 32px; transition: all 0.2s; border-radius: 2px; }
   .btn-retry:hover { background: var(--gold); color: var(--parchment); }
+  .btn-team { display: block; width: 100%; padding: 16px; background: var(--ink); border: none; color: var(--parchment); font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; cursor: pointer; margin-top: 12px; transition: all 0.2s; border-radius: 2px; box-shadow: 0 4px 16px rgba(44,30,15,0.3); }
+  .btn-team:hover { background: var(--ink-light); transform: translateY(-1px); }
+
+  /* チームページ */
+  .team-member-list { margin-bottom: 28px; }
+  .team-member-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid rgba(184,134,11,0.3); border-radius: 2px; margin-bottom: 10px; background: rgba(184,134,11,0.03); position: relative; animation: fadeIn 0.3s ease; }
+  .team-member-emoji { font-size: 28px; flex-shrink: 0; }
+  .team-member-info { flex: 1; }
+  .team-member-name { font-size: 14px; color: var(--ink); font-weight: 500; margin-bottom: 2px; }
+  .team-member-type { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); letter-spacing: 2px; }
+  .team-member-remove { background: none; border: none; color: var(--ink-light); cursor: pointer; font-size: 18px; padding: 4px 8px; opacity: 0.5; transition: opacity 0.2s; flex-shrink: 0; }
+  .team-member-remove:hover { opacity: 1; }
+
+  .add-member-form { border: 1.5px dashed rgba(184,134,11,0.4); padding: 20px; border-radius: 2px; margin-bottom: 28px; }
+  .add-member-form-title { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); letter-spacing: 3px; margin-bottom: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid rgba(184,134,11,0.4); background: transparent; font-family: 'Noto Serif JP', serif; font-size: 13px; color: var(--ink); border-radius: 2px; outline: none; }
+  .form-input:focus { border-color: var(--gold); }
+  .form-select { width: 100%; padding: 10px 14px; border: 1.5px solid rgba(184,134,11,0.4); background: var(--parchment); font-family: 'Noto Serif JP', serif; font-size: 13px; color: var(--ink); border-radius: 2px; outline: none; cursor: pointer; }
+  .form-select:focus { border-color: var(--gold); }
+  .btn-add-member { width: 100%; padding: 10px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+  .btn-add-member:hover { background: var(--gold); color: var(--parchment); }
+
+  /* チーム分析 */
+  .team-analysis { margin-top: 8px; }
+  .group-dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .group-dist-card { border: 1px solid rgba(184,134,11,0.3); padding: 14px 16px; border-radius: 2px; background: rgba(184,134,11,0.04); }
+  .group-dist-name { font-size: 13px; color: var(--ink); font-weight: 500; margin-bottom: 6px; }
+  .group-dist-members { font-size: 12px; color: var(--ink-light); line-height: 1.7; }
+  .group-dist-count { font-family: 'Cinzel', serif; font-size: 22px; color: var(--gold); font-weight: 700; float: right; }
+  .group-dist-card.zero { opacity: 0.4; }
+
+  .team-insight { padding: 18px 20px; border-radius: 2px; margin-bottom: 12px; }
+  .team-insight.strength { background: rgba(74,103,65,0.07); border: 1px solid rgba(74,103,65,0.3); }
+  .team-insight.blind { background: rgba(139,26,26,0.05); border: 1px solid rgba(139,26,26,0.2); }
+  .team-insight.balance { background: rgba(184,134,11,0.06); border: 1px solid rgba(184,134,11,0.2); }
+  .team-insight-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 3px; margin-bottom: 8px; }
+  .team-insight.strength .team-insight-label { color: #4a6741; }
+  .team-insight.blind .team-insight-label { color: #8b1a1a; }
+  .team-insight.balance .team-insight-label { color: var(--gold); }
+  .team-insight-text { font-size: 13px; color: var(--ink); line-height: 1.8; }
+
+  .compat-matrix { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .compat-matrix th { font-family: 'Cinzel', serif; font-size: 10px; color: var(--gold); letter-spacing: 1px; padding: 8px 10px; text-align: center; border-bottom: 1px solid rgba(184,134,11,0.3); }
+  .compat-matrix td { padding: 10px; text-align: center; border-bottom: 1px solid rgba(184,134,11,0.1); vertical-align: middle; }
+  .compat-matrix tr:last-child td { border-bottom: none; }
+  .compat-cell-name { font-size: 12px; color: var(--ink); text-align: left; }
+  .compat-badge { display: inline-block; padding: 3px 8px; border-radius: 2px; font-size: 10px; }
+  .compat-badge.good { background: rgba(74,103,65,0.12); color: #4a6741; }
+  .compat-badge.caution { background: rgba(139,26,26,0.08); color: #8b1a1a; }
+  .compat-badge.neutral { background: rgba(184,134,11,0.08); color: var(--gold); }
 
   @media (max-width: 600px) {
     .content { padding: 40px 28px; }
@@ -288,6 +339,48 @@
 
     <!-- 結果ページ -->
     <div id="result-page" style="display:none;"></div>
+
+    <!-- チームページ -->
+    <div id="team-page" style="display:none;">
+      <div class="header">
+        <div class="header-ornament">✦ Team Analysis ✦</div>
+        <h1>チーム分析</h1>
+        <div class="header-sub">メンバーのタイプを追加して、チームの特性を把握する</div>
+        <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+      </div>
+      <div class="result-section-title" style="margin-bottom:16px;">メンバー一覧</div>
+      <div class="team-member-list" id="team-member-list"></div>
+      <div class="add-member-form">
+        <div class="add-member-form-title">✦ メンバーを追加する</div>
+        <div class="form-row">
+          <input class="form-input" id="member-name-input" type="text" placeholder="名前（例：田中さん）" maxlength="20">
+          <select class="form-select" id="member-type-select">
+            <option value="">タイプを選択</option>
+            <option value="ECIF">🧭 航海士（ECIF）</option>
+            <option value="ECIT">🎶 吟遊詩人（ECIT）</option>
+            <option value="ECAF">⚔️ 騎士団長（ECAF）</option>
+            <option value="ECAT">🤝 外交官（ECAT）</option>
+            <option value="NDIF">🗺️ 斥候（NDIF）</option>
+            <option value="NDIT">⚗️ 錬金術師（NDIT）</option>
+            <option value="NDAF">🌿 薬師（NDAF）</option>
+            <option value="NDAT">📜 写本師（NDAT）</option>
+            <option value="EDIF">🔮 預言者（EDIF）</option>
+            <option value="EDIT">🏛️ 哲学者（EDIT）</option>
+            <option value="EDAF">📣 弁論家（EDAF）</option>
+            <option value="EDAT">⚖️ 裁判官（EDAT）</option>
+            <option value="NCIF">🏮 灯台守（NCIF）</option>
+            <option value="NCIT">🕊️ 修道士（NCIT）</option>
+            <option value="NCAF">🗺️ 地図師（NCAF）</option>
+            <option value="NCAT">📚 司書（NCAT）</option>
+          </select>
+        </div>
+        <button class="btn-add-member" onclick="addMember()">＋ メンバーを追加する</button>
+      </div>
+      <div id="team-analysis-area"></div>
+      <div class="nav-area">
+        <button class="btn-back" onclick="backToResult()">← 結果に戻る</button>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -758,11 +851,15 @@ function showResult() {
       </div>
     </div>
 
+    <button class="btn-team" onclick="goToTeamPage(myResultCode)">🏰 チームを作る・分析する</button>
     <button class="btn-retry" onclick="retry()">もう一度診断する</button>
   `;
 
   document.getElementById('result-page').innerHTML = html;
   document.getElementById('result-page').style.display = 'block';
+  // 自分のタイプを保存＆チームに自動追加
+  myResultCode = code;
+  teamMembers = [{ name: 'あなた', type: code, id: 0 }];
 }
 
 function switchWorkTab(nature, btn, code) {
@@ -775,9 +872,166 @@ function retry() {
   currentQ = 0;
   answers = {};
   profile = { nature: null, position: null };
+  teamMembers = [];
+  myResultCode = null;
   document.getElementById('result-page').style.display = 'none';
   document.getElementById('result-page').innerHTML = '';
+  document.getElementById('team-page').style.display = 'none';
   document.getElementById('intro-page').style.display = 'block';
+}
+
+// ===== チーム機能 =====
+let teamMembers = [];
+let myResultCode = null;
+
+function goToTeamPage(code) {
+  document.getElementById('result-page').style.display = 'none';
+  document.getElementById('team-page').style.display = 'block';
+  renderTeamMembers();
+  renderTeamAnalysis();
+}
+
+function backToResult() {
+  document.getElementById('team-page').style.display = 'none';
+  document.getElementById('result-page').style.display = 'block';
+}
+
+function addMember() {
+  const name = document.getElementById('member-name-input').value.trim();
+  const type = document.getElementById('member-type-select').value;
+  if (!name) { alert('名前を入力してください'); return; }
+  if (!type) { alert('タイプを選択してください'); return; }
+  teamMembers.push({ name, type, id: Date.now() });
+  document.getElementById('member-name-input').value = '';
+  document.getElementById('member-type-select').value = '';
+  renderTeamMembers();
+  renderTeamAnalysis();
+}
+
+function removeMember(id) {
+  teamMembers = teamMembers.filter(m => m.id !== id);
+  renderTeamMembers();
+  renderTeamAnalysis();
+}
+
+function renderTeamMembers() {
+  const list = document.getElementById('team-member-list');
+  if (teamMembers.length === 0) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--ink-light);padding:16px 0;text-align:center;">まだメンバーがいません。下のフォームから追加してください。</div>';
+    return;
+  }
+  list.innerHTML = teamMembers.map(m => {
+    const t = typeData[m.type];
+    return '<div class="team-member-card"><span class="team-member-emoji">' + t.emoji + '</span><div class="team-member-info"><div class="team-member-name">' + m.name + '</div><div class="team-member-type">' + m.type + ' — ' + t.name + '</div></div><button class="team-member-remove" onclick="removeMember(' + m.id + ')">✕</button></div>';
+  }).join('');
+}
+
+function renderTeamAnalysis() {
+  const area = document.getElementById('team-analysis-area');
+  if (teamMembers.length < 2) {
+    area.innerHTML = '<div style="font-size:13px;color:var(--ink-light);text-align:center;padding:20px 0;">2人以上追加するとチーム分析が表示されます</div>';
+    return;
+  }
+
+  const groupCount = { EC: [], ND: [], ED: [], NC: [] };
+  teamMembers.forEach(m => {
+    const g = m.type.slice(0,2);
+    if (groupCount[g]) groupCount[g].push(m.name);
+  });
+
+  const groupInfo = {
+    EC: { name:'🌊 航海者グループ', desc:'発信型×協調型' },
+    ND: { name:'🌑 探求者グループ', desc:'内省型×独立型' },
+    ED: { name:'🔥 発信者グループ', desc:'発信型×独立型' },
+    NC: { name:'🌿 支柱者グループ', desc:'内省型×協調型' },
+  };
+
+  const groupDistHTML = Object.entries(groupCount).map(([g, members]) =>
+    '<div class="group-dist-card ' + (members.length === 0 ? 'zero' : '') + '"><span class="group-dist-count">' + members.length + '</span><div class="group-dist-name">' + groupInfo[g].name + '</div><div class="group-dist-members">' + (members.length > 0 ? members.join('、') : '—') + '</div></div>'
+  ).join('');
+
+  const presentGroups = Object.entries(groupCount).filter(([,m]) => m.length > 0).map(([g]) => g);
+  const missingGroups = Object.entries(groupCount).filter(([,m]) => m.length === 0).map(([g]) => g);
+
+  const strengthMessages = {
+    EC: 'チームを動かす推進力と対話力がある',
+    ND: '深く考え、独自の視点で課題に切り込める',
+    ED: '芯を持った発信力と論理的判断力がある',
+    NC: '場の空気を読み、チームを静かに支える力がある',
+  };
+  const blindMessages = {
+    EC: '「とりあえず動く」推進力や、チームを巻き込む対話力が不足しがち',
+    ND: '深く掘り下げる思考力や、独自アプローチを生む創造力が不足しがち',
+    ED: '自分の意見を力強く発信する役割や、論理的な判断軸が不足しがち',
+    NC: '場の空気を読む感度や、縁の下で支える役割が不足しがち',
+  };
+
+  const strengthText = presentGroups.map(g => '◆ ' + groupInfo[g].name + '：' + strengthMessages[g]).join('<br>');
+  const blindText = missingGroups.length > 0
+    ? missingGroups.map(g => '◆ ' + groupInfo[g].name + 'が不在：' + blindMessages[g]).join('<br>')
+    : '全グループが揃っています！バランスの取れたチーム構成です。';
+
+  const totalE = teamMembers.filter(m => m.type[0] === 'E').length;
+  const totalN = teamMembers.length - totalE;
+  const totalF = teamMembers.filter(m => m.type[3] === 'F').length;
+  const totalT = teamMembers.length - totalF;
+  const totalI = teamMembers.filter(m => m.type[2] === 'I').length;
+  const totalA = teamMembers.length - totalI;
+
+  let balanceAdvice = [];
+  if (totalE > totalN * 2) balanceAdvice.push('発信型が多め。内省して深める時間をチームとして意識的に作ると良い');
+  if (totalN > totalE * 2) balanceAdvice.push('内省型が多め。意見を引き出す場づくりと、発信する機会を増やすと良い');
+  if (totalF > totalT * 2) balanceAdvice.push('先行型が多め。動き出す前に立ち止まって確認するプロセスを意識的に設けると良い');
+  if (totalT > totalF * 2) balanceAdvice.push('熟考型が多め。「まず小さく試す」文化を取り入れると推進力が上がる');
+  if (totalI > totalA * 2) balanceAdvice.push('直感型が多め。根拠やデータで裏付けるプロセスを意識すると説得力が増す');
+  if (totalA > totalI * 2) balanceAdvice.push('分析型が多め。データだけでなく直感や感覚を大切にする余白もあると良い');
+  if (balanceAdvice.length === 0) balanceAdvice.push('各軸でバランスが取れています。多様な視点が揃ったチームです');
+
+  const matrixHTML = buildCompatMatrix();
+
+  area.innerHTML =
+    '<div class="team-analysis">' +
+    '<div class="result-section-title" style="margin-bottom:16px;">グループ分布</div>' +
+    '<div class="group-dist-grid">' + groupDistHTML + '</div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;">チームの強み</div>' +
+    '<div class="team-insight strength"><div class="team-insight-label">✦ TEAM STRENGTH</div><div class="team-insight-text">' + strengthText + '</div></div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;margin-top:20px;">チームの盲点</div>' +
+    '<div class="team-insight blind"><div class="team-insight-label">⚠ BLIND SPOT</div><div class="team-insight-text">' + blindText + '</div></div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;margin-top:20px;">バランスアドバイス</div>' +
+    '<div class="team-insight balance"><div class="team-insight-label">✦ BALANCE ADVICE</div><div class="team-insight-text">' + balanceAdvice.map(a => '◆ ' + a).join('<br>') + '</div></div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;margin-top:20px;">相性マップ</div>' +
+    matrixHTML +
+    '</div>';
+}
+
+function buildCompatMatrix() {
+  if (teamMembers.length < 2) return '';
+  let html = '<div style="overflow-x:auto;"><table class="compat-matrix"><thead><tr><th></th>';
+  teamMembers.forEach(m => { html += '<th>' + typeData[m.type].emoji + '<br>' + m.name + '</th>'; });
+  html += '</tr></thead><tbody>';
+  teamMembers.forEach(m1 => {
+    html += '<tr><td class="compat-cell-name">' + typeData[m1.type].emoji + ' ' + m1.name + '</td>';
+    teamMembers.forEach(m2 => {
+      if (m1.id === m2.id) {
+        html += '<td><span style="color:var(--gold-light);">—</span></td>';
+      } else {
+        const rel = getRelation(m1.type, m2.type);
+        html += '<td><span class="compat-badge ' + rel.cls + '">' + rel.label + '</span></td>';
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function getRelation(type1, type2) {
+  const t1 = typeData[type1];
+  const isGood = t1.good.some(g => g.name.includes(type2));
+  const isCaution = t1.caution_type.some(c => c.name.includes(type2));
+  if (isGood) return { cls: 'good', label: '◎ 相性良' };
+  if (isCaution) return { cls: 'caution', label: '△ 要注意' };
+  return { cls: 'neutral', label: '○ 普通' };
 }
 </script>
 </body>
