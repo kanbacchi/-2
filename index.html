@@ -153,6 +153,8 @@
 
   .btn-retry { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; cursor: pointer; margin-top: 32px; transition: all 0.2s; border-radius: 2px; }
   .btn-retry:hover { background: var(--gold); color: var(--parchment); }
+  .btn-typelist { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; cursor: pointer; margin-top: 14px; transition: all 0.2s; border-radius: 2px; text-align: center; }
+  .btn-typelist:hover { background: rgba(184,134,11,0.12); }
   .btn-team { display: block; width: 100%; padding: 16px; background: var(--ink); border: none; color: var(--parchment); font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; cursor: pointer; margin-top: 12px; transition: all 0.2s; border-radius: 2px; box-shadow: 0 4px 16px rgba(44,30,15,0.3); }
   .btn-team:hover { background: var(--ink-light); transform: translateY(-1px); }
 
@@ -207,6 +209,7 @@
 
   /* タイプ一覧ページ */
   .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 32px; }
+  .type-grid-group-label { grid-column: 1 / -1; font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); letter-spacing: 3px; margin-top: 8px; margin-bottom: 4px; padding: 8px 12px; background: rgba(184,134,11,0.06); border: 1px solid rgba(184,134,11,0.2); border-radius: 2px; }
   .type-btn { border: 1.5px solid rgba(184,134,11,0.4); background: transparent; padding: 14px 8px; cursor: pointer; text-align: center; transition: all 0.2s; border-radius: 2px; }
   .type-btn:hover { border-color: var(--gold); background: rgba(184,134,11,0.08); }
   .type-btn.active { border-color: var(--gold); background: rgba(184,134,11,0.15); }
@@ -305,7 +308,7 @@
 
       <div class="intro-note">◆ 所要時間：約10〜15分　◆ 各質問を5段階で評価　◆ 回答後すぐに結果が表示されます<br>◆ 正解も不正解もありません。直感で答えてください。</div>
       <button class="btn-start" onclick="startDiagnosis()">診断をはじめる</button>
-      <button class="btn-back" onclick="goToTypeList()" style="display:block;width:100%;margin-top:12px;padding:12px;text-align:center;">📖 16タイプ一覧を見る</button>
+      <button class="btn-typelist" onclick="goToTypeList()">📖 16タイプ一覧を見る</button>
     </div>
 
     <!-- 設問ページ -->
@@ -414,7 +417,7 @@
       <div id="type-detail-area"></div>
 
       <div class="nav-area" style="margin-top:32px;">
-        <button class="btn-back" onclick="backToIntro()">← トップに戻る</button>
+        <button class="btn-back" id="typelist-back-btn" onclick="backToIntro()">← トップに戻る</button>
       </div>
     </div>
 
@@ -888,6 +891,7 @@ function showResult() {
     </div>
 
     <button class="btn-team" onclick="goToTeamPage(myResultCode)">🏰 チームを作る・分析する</button>
+    <button class="btn-typelist" onclick="goToTypeListFromResult()">📖 16タイプ一覧を見る</button>
     <button class="btn-retry" onclick="retry()">もう一度診断する</button>
   `;
 
@@ -1071,6 +1075,19 @@ function getRelation(type1, type2) {
 }
 
 // ===== タイプ一覧機能 =====
+function goToTypeListFromResult() {
+  document.getElementById('result-page').style.display = 'none';
+  document.getElementById('typelist-page').style.display = 'block';
+  // 結果ページから戻るボタンを切り替え
+  document.getElementById('typelist-back-btn').onclick = function() {
+    document.getElementById('typelist-page').style.display = 'none';
+    document.getElementById('result-page').style.display = 'block';
+    selectedType = null;
+  };
+  renderTypeGrid();
+  document.getElementById('type-detail-area').innerHTML = '<div style="font-size:13px;color:var(--ink-light);text-align:center;padding:24px 0;">上のボタンからタイプを選んでください</div>';
+}
+
 const typeOrder = ['ECIF','ECIT','ECAF','ECAT','NDIF','NDIT','NDAF','NDAT','EDIF','EDIT','EDAF','EDAT','NCIF','NCIT','NCAF','NCAT'];
 const groupLabels = { EC:'🌊 航海者グループ', ND:'🌑 探求者グループ', ED:'🔥 発信者グループ', NC:'🌿 支柱者グループ' };
 let selectedType = null;
@@ -1078,6 +1095,7 @@ let selectedType = null;
 function goToTypeList() {
   document.getElementById('intro-page').style.display = 'none';
   document.getElementById('typelist-page').style.display = 'block';
+  document.getElementById('typelist-back-btn').onclick = backToIntro;
   renderTypeGrid();
   document.getElementById('type-detail-area').innerHTML = '<div style="font-size:13px;color:var(--ink-light);text-align:center;padding:24px 0;">上のボタンからタイプを選んでください</div>';
 }
@@ -1094,10 +1112,10 @@ function renderTypeGrid() {
   let html = '';
   groups.forEach(g => {
     const types = typeOrder.filter(t => t.startsWith(g));
-    html += '<div style="grid-column:1/-1;font-family:Cinzel,serif;font-size:10px;color:var(--gold);letter-spacing:3px;margin-top:8px;margin-bottom:4px;">' + groupLabels[g] + '</div>';
+    html += '<div class="type-grid-group-label">' + groupLabels[g] + '</div>';
     types.forEach(code => {
       const t = typeData[code];
-      html += '<button class="type-btn" id="typebtn-' + code + '" onclick="showTypeDetail('' + code + '')"><span class="type-btn-emoji">' + t.emoji + '</span><span class="type-btn-name">' + t.name + '</span><span class="type-btn-code">' + code + '</span></button>';
+      html += '<button class="type-btn" id="typebtn-' + code + '" onclick="showTypeDetail(\'' + code + '\')"><span class="type-btn-emoji">' + t.emoji + '</span><span class="type-btn-name">' + t.name + '</span><span class="type-btn-code">' + code + '</span></button>';
     });
   });
   grid.innerHTML = html;
