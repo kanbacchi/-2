@@ -153,8 +153,9 @@
 
   .btn-retry { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; cursor: pointer; margin-top: 32px; transition: all 0.2s; border-radius: 2px; }
   .btn-retry:hover { background: var(--gold); color: var(--parchment); }
-  .btn-typelist { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; cursor: pointer; margin-top: 14px; transition: all 0.2s; border-radius: 2px; text-align: center; }
+  .btn-typelist { display: block; width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; cursor: pointer; transition: all 0.2s; border-radius: 2px; text-align: center; }
   .btn-typelist:hover { background: rgba(184,134,11,0.12); }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
   .btn-team { display: block; width: 100%; padding: 16px; background: var(--ink); border: none; color: var(--parchment); font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 3px; cursor: pointer; margin-top: 12px; transition: all 0.2s; border-radius: 2px; box-shadow: 0 4px 16px rgba(44,30,15,0.3); }
   .btn-team:hover { background: var(--ink-light); transform: translateY(-1px); }
 
@@ -308,7 +309,10 @@
 
       <div class="intro-note">◆ 所要時間：約10〜15分　◆ 各質問を5段階で評価　◆ 回答後すぐに結果が表示されます<br>◆ 正解も不正解もありません。直感で答えてください。</div>
       <button class="btn-start" onclick="startDiagnosis()">診断をはじめる</button>
-      <button class="btn-typelist" onclick="goToTypeList()">📖 16タイプ一覧を見る</button>
+      <div class="btn-row">
+        <button class="btn-typelist" onclick="goToTypeList()">📖 16タイプ一覧を見る</button>
+        <button class="btn-typelist" onclick="goToCompatPage()">💞 相性・チーム診断</button>
+      </div>
     </div>
 
     <!-- 設問ページ -->
@@ -421,8 +425,53 @@
       </div>
     </div>
 
+    <!-- 相性・チーム診断ページ（トップから直接） -->
+    <div id="compat-page" style="display:none;">
+      <div class="header">
+        <div class="header-ornament">✦ Compatibility & Team Analysis ✦</div>
+        <h1>相性・チーム診断</h1>
+        <div class="header-sub">タイプを選んでチームの相性を分析する</div>
+        <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+      </div>
+
+      <div class="result-section-title" style="margin-bottom:16px;">メンバー一覧</div>
+      <div class="team-member-list" id="compat-member-list"></div>
+
+      <div class="add-member-form">
+        <div class="add-member-form-title">✦ メンバーを追加する</div>
+        <div class="form-row">
+          <input class="form-input" id="compat-name-input" type="text" placeholder="名前（例：田中さん）" maxlength="20">
+          <select class="form-select" id="compat-type-select">
+            <option value="">タイプを選択</option>
+            <option value="ECIF">🧭 航海士（ECIF）</option>
+            <option value="ECIT">🎶 吟遊詩人（ECIT）</option>
+            <option value="ECAF">⚔️ 騎士団長（ECAF）</option>
+            <option value="ECAT">🤝 外交官（ECAT）</option>
+            <option value="NDIF">🗺️ 斥候（NDIF）</option>
+            <option value="NDIT">⚗️ 錬金術師（NDIT）</option>
+            <option value="NDAF">🌿 薬師（NDAF）</option>
+            <option value="NDAT">📜 写本師（NDAT）</option>
+            <option value="EDIF">🔮 預言者（EDIF）</option>
+            <option value="EDIT">🏛️ 哲学者（EDIT）</option>
+            <option value="EDAF">📣 弁論家（EDAF）</option>
+            <option value="EDAT">⚖️ 裁判官（EDAT）</option>
+            <option value="NCIF">🏮 灯台守（NCIF）</option>
+            <option value="NCIT">🕊️ 修道士（NCIT）</option>
+            <option value="NCAF">🗺️ 地図師（NCAF）</option>
+            <option value="NCAT">📚 司書（NCAT）</option>
+          </select>
+        </div>
+        <button class="btn-add-member" onclick="addCompatMember()">＋ メンバーを追加する</button>
+      </div>
+
+      <div id="compat-analysis-area"></div>
+
+      <div class="nav-area" style="margin-top:32px;">
+        <button class="btn-back" onclick="backToIntroFromCompat()">← トップに戻る</button>
+      </div>
+    </div>
+
   </div>
-</div>
 
 <script>
 const questions = [
@@ -1175,6 +1224,148 @@ function showTypeDetail(code) {
   document.getElementById('type-detail-area').innerHTML = html;
   document.getElementById('type-detail-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+// ===== 相性・チーム診断（トップから直接） =====
+let compatMembers = [];
+
+function goToCompatPage() {
+  document.getElementById('intro-page').style.display = 'none';
+  document.getElementById('compat-page').style.display = 'block';
+  renderCompatMembers();
+  renderCompatAnalysis();
+}
+
+function backToIntroFromCompat() {
+  document.getElementById('compat-page').style.display = 'none';
+  document.getElementById('intro-page').style.display = 'block';
+}
+
+function addCompatMember() {
+  const name = document.getElementById('compat-name-input').value.trim();
+  const type = document.getElementById('compat-type-select').value;
+  if (!name) { alert('名前を入力してください'); return; }
+  if (!type) { alert('タイプを選択してください'); return; }
+  compatMembers.push({ name, type, id: Date.now() });
+  document.getElementById('compat-name-input').value = '';
+  document.getElementById('compat-type-select').value = '';
+  renderCompatMembers();
+  renderCompatAnalysis();
+}
+
+function removeCompatMember(id) {
+  compatMembers = compatMembers.filter(m => m.id !== id);
+  renderCompatMembers();
+  renderCompatAnalysis();
+}
+
+function renderCompatMembers() {
+  const list = document.getElementById('compat-member-list');
+  if (compatMembers.length === 0) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--ink-light);padding:16px 0;text-align:center;">まだメンバーがいません。下のフォームから追加してください。</div>';
+    return;
+  }
+  list.innerHTML = compatMembers.map(m => {
+    const t = typeData[m.type];
+    return '<div class="team-member-card"><span class="team-member-emoji">' + t.emoji + '</span><div class="team-member-info"><div class="team-member-name">' + m.name + '</div><div class="team-member-type">' + m.type + ' — ' + t.name + '</div></div><button class="team-member-remove" onclick="removeCompatMember(' + m.id + ')">✕</button></div>';
+  }).join('');
+}
+
+function renderCompatAnalysis() {
+  const area = document.getElementById('compat-analysis-area');
+  if (compatMembers.length < 2) {
+    area.innerHTML = '<div style="font-size:13px;color:var(--ink-light);text-align:center;padding:20px 0;">2人以上追加するとチーム分析が表示されます</div>';
+    return;
+  }
+
+  const groupCount = { EC: [], ND: [], ED: [], NC: [] };
+  compatMembers.forEach(m => {
+    const g = m.type.slice(0,2);
+    if (groupCount[g]) groupCount[g].push(m.name);
+  });
+
+  const groupInfo = {
+    EC: { name:'🌊 航海者グループ', desc:'発信型×協調型' },
+    ND: { name:'🌑 探求者グループ', desc:'内省型×独立型' },
+    ED: { name:'🔥 発信者グループ', desc:'発信型×独立型' },
+    NC: { name:'🌿 支柱者グループ', desc:'内省型×協調型' },
+  };
+
+  const groupDistHTML = Object.entries(groupCount).map(([g, members]) =>
+    '<div class="group-dist-card ' + (members.length === 0 ? 'zero' : '') + '"><span class="group-dist-count">' + members.length + '</span><div class="group-dist-name">' + groupInfo[g].name + '</div><div class="group-dist-members">' + (members.length > 0 ? members.join('、') : '—') + '</div></div>'
+  ).join('');
+
+  const presentGroups = Object.entries(groupCount).filter(([,m]) => m.length > 0).map(([g]) => g);
+  const missingGroups = Object.entries(groupCount).filter(([,m]) => m.length === 0).map(([g]) => g);
+
+  const strengthMessages = {
+    EC: 'チームを動かす推進力と対話力がある',
+    ND: '深く考え、独自の視点で課題に切り込める',
+    ED: '芯を持った発信力と論理的判断力がある',
+    NC: '場の空気を読み、チームを静かに支える力がある',
+  };
+  const blindMessages = {
+    EC: '「とりあえず動く」推進力や、チームを巻き込む対話力が不足しがち',
+    ND: '深く掘り下げる思考力や、独自アプローチを生む創造力が不足しがち',
+    ED: '自分の意見を力強く発信する役割や、論理的な判断軸が不足しがち',
+    NC: '場の空気を読む感度や、縁の下で支える役割が不足しがち',
+  };
+
+  const strengthText = presentGroups.map(g => '◆ ' + groupInfo[g].name + '：' + strengthMessages[g]).join('<br>');
+  const blindText = missingGroups.length > 0
+    ? missingGroups.map(g => '◆ ' + groupInfo[g].name + 'が不在：' + blindMessages[g]).join('<br>')
+    : '全グループが揃っています！バランスの取れたチーム構成です。';
+
+  const totalE = compatMembers.filter(m => m.type[0] === 'E').length;
+  const totalN = compatMembers.length - totalE;
+  const totalF = compatMembers.filter(m => m.type[3] === 'F').length;
+  const totalT = compatMembers.length - totalF;
+  const totalI = compatMembers.filter(m => m.type[2] === 'I').length;
+  const totalA = compatMembers.length - totalI;
+
+  let balanceAdvice = [];
+  if (totalE > totalN * 2) balanceAdvice.push('発信型が多め。内省して深める時間をチームとして意識的に作ると良い');
+  if (totalN > totalE * 2) balanceAdvice.push('内省型が多め。意見を引き出す場づくりと、発信する機会を増やすと良い');
+  if (totalF > totalT * 2) balanceAdvice.push('先行型が多め。動き出す前に立ち止まって確認するプロセスを意識的に設けると良い');
+  if (totalT > totalF * 2) balanceAdvice.push('熟考型が多め。「まず小さく試す」文化を取り入れると推進力が上がる');
+  if (totalI > totalA * 2) balanceAdvice.push('直感型が多め。根拠やデータで裏付けるプロセスを意識すると説得力が増す');
+  if (totalA > totalI * 2) balanceAdvice.push('分析型が多め。データだけでなく直感や感覚を大切にする余白もあると良い');
+  if (balanceAdvice.length === 0) balanceAdvice.push('各軸でバランスが取れています。多様な視点が揃ったチームです');
+
+  const matrixHTML = buildCompatMatrixFor(compatMembers);
+
+  area.innerHTML =
+    '<div class="team-analysis">' +
+    '<div class="result-section-title" style="margin-bottom:16px;">グループ分布</div>' +
+    '<div class="group-dist-grid">' + groupDistHTML + '</div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;">チームの強み</div>' +
+    '<div class="team-insight strength"><div class="team-insight-label">✦ TEAM STRENGTH</div><div class="team-insight-text">' + strengthText + '</div></div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;margin-top:20px;">チームの盲点</div>' +
+    '<div class="team-insight blind"><div class="team-insight-label">⚠ BLIND SPOT</div><div class="team-insight-text">' + blindText + '</div></div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;margin-top:20px;">バランスアドバイス</div>' +
+    '<div class="team-insight balance"><div class="team-insight-label">✦ BALANCE ADVICE</div><div class="team-insight-text">' + balanceAdvice.map(a => '◆ ' + a).join('<br>') + '</div></div>' +
+    '<div class="result-section-title" style="margin-bottom:16px;margin-top:20px;">相性マップ</div>' +
+    matrixHTML +
+    '</div>';
+}
+
+function buildCompatMatrixFor(members) {
+  if (members.length < 2) return '';
+  let html = '<div style="overflow-x:auto;"><table class="compat-matrix"><thead><tr><th></th>';
+  members.forEach(m => { html += '<th>' + typeData[m.type].emoji + '<br>' + m.name + '</th>'; });
+  html += '</tr></thead><tbody>';
+  members.forEach(m1 => {
+    html += '<tr><td class="compat-cell-name">' + typeData[m1.type].emoji + ' ' + m1.name + '</td>';
+    members.forEach(m2 => {
+      if (m1.id === m2.id) {
+        html += '<td><span style="color:var(--gold-light);">—</span></td>';
+      } else {
+        const rel = getRelation(m1.type, m2.type);
+        html += '<td><span class="compat-badge ' + rel.cls + '">' + rel.label + '</span></td>';
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
 </script>
-</body>
 </html>
